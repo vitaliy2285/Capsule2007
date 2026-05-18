@@ -1,9 +1,7 @@
 
 const TOTAL_CELLS=20007;
 const SECTOR_SIZE=500;
-const START_ARCHIVE_COUNT=217;
-const USER_CAPSULES_COUNT=0;
-const START_OCCUPIED=START_ARCHIVE_COUNT;
+const START_OCCUPIED=2317;
 let currentSector=1;
 let selectedArchiveCell=null;
 
@@ -12,45 +10,31 @@ function occupiedCount2007(){
   return START_OCCUPIED;
 }
 function renderTopCounters2007(){
-  const seed = START_ARCHIVE_COUNT;
-  const user = USER_CAPSULES_COUNT;
-  const free = TOTAL_CELLS - seed - user;
-  const t=document.getElementById('statTotal'), f=document.getElementById('statFree'), s=document.getElementById('statSeed'), u=document.getElementById('statUser'), o=document.getElementById('statTaken');
+  const taken = occupiedCount2007();
+  const free = TOTAL_CELLS - taken;
+  const t=document.getElementById('statTotal'), f=document.getElementById('statFree'), o=document.getElementById('statTaken');
   if(t)t.textContent=String(TOTAL_CELLS);
-  if(s)s.textContent=String(seed).padStart(5,'0');
-  if(u)u.textContent=String(user).padStart(5,'0');
   if(f)f.textContent=String(free).padStart(5,'0');
-  if(o)o.textContent=String(seed);
+  if(o)o.textContent=String(taken);
 }
 function track2007(event, data={}){try{window.dataLayer=window.dataLayer||[];window.dataLayer.push({event,...data});console.log('[Capsule2007]',event,data)}catch(e){}}
 
 const specialArchiveCells=new Set([7,107,777,1337,2007,7777,11111,12345,16000,20007]);
-const startArchiveCells=new Set([49,88,101,106,108,109,160,231,302,404,505,512,626,634,640,648,661,664,670,671,676,677,701,706,711,820,909,976,1001,1207,1301,1312,1313,1324,1346,1347,1355,1358,1402,1505,1703,1808,1907,1972,1975,1976,1990,1991,1999,2002,2009,2010,2020,2026,2072,2107,2205,2306,2407,2501,2576,2589,2608,2614,2615,2616,2618,2622,2626,2628,2709,3001,3078,3106,3207,3285,3293,3295,3296,3302,3306,3314,3321,3327,3333,3405,3506,3517,3607,3708,3809,4004,4105,4206,4307,4408,4453,4509,4600,4725,4773,4777,4780,4784,4800,4803,4820,4822,4828,5686,6110,6241,6472,6475,6480,6483,6487,6494,6507,6508,6522,6733,7088,7447,7530,7744,7752,7757,7767,7776,7780,7781,7793,8776,8778,8781,8797,8801,8809,8814,8823,8828,9140,9216,9407,9964,9974,9984,9990,9999,10002,10011,10012,10014,10298,11075,11086,11091,11098,11100,11105,11110,11117,11785,12280,12281,12292,12296,12304,12309,12321,12323,12325,12724,12750,13110,13137,13647,14474,14476,14478,14485,14495,14507,14518,14521,14522,15968,16046,16052,16056,16059,16060,16061,16069,16073,16405,16516,16689,17391,17999,18000,18001,18004,18014,18015,18017,18031,19249,19679,19686,19697,19699,19728,19731,19733,19734]);
 const capsuleOwners=['Костя','Данил','Лена','Игорь','Макс','Света','Жека','Юля','Вова','Андрей','Сашка','Настя','Рома','Ира','Дима','Катя'];
 function padCell(n){return String(n).padStart(5,'0')}
 
 /* === Capsule2007 ownership / cell preview helpers === */
 const capsuleSeedMemories=[
-  "Мама кричала выключать комп, а мы доигрывали de_dust2.",
-  "Папка D:\Музыка была важнее любого облака.",
-  "Ждал её в QIP до двух ночи. Она зашла и написала: привет :)",
-  "DVD-R с надписью «ВСЁ НУЖНОЕ» лежал у всех.",
-  "Скачивал трек всю ночь, а утром он оказался не тем.",
-  "В клубе пахло пылью, дошираком и дешёвым кофе.",
-  "NFS Underground казалась красивее настоящего города.",
-  "ICQ пищала — и сердце реально ускорялось.",
-  "Сервер full. Ждите слот. И мы ждали.",
-  "Сохраняла его SMS, пока телефон не попросил удалить память.",
-  "На болванке маркером: игры, драйвера, клипы, 2007.",
-  "У кого был Nero — тот был главным человеком во дворе.",
-  "Ночью интернет работал будто быстрее. Или нам так казалось.",
-  "Winamp завис, но песня всё равно играла в голове.",
-  "В школе обсуждали не оценки, а кто вчера был в клубе.",
-  "Звонил на домашний и молчал, лишь бы услышать голос.",
-  "На Nokia было 3 деления батареи — значит жизнь нормальная.",
-  "Перекидывали музыку через ИК-порт и не дышали.",
-  "Пиратский диск запускался с третьего раза, но запускался.",
-  "Я тогда не знал, что это и было лучшее лето."
+  'Мама кричала выключать комп, а мы доигрывали de_dust2.',
+  'Папка D:\\Музыка была важнее любого облака.',
+  'Ждал её в QIP до двух ночи. Она зашла и написала: привет :)',
+  'DVD-R с надписью ВСЁ НУЖНОЕ до сих пор где-то у родителей.',
+  'Скачивал музыку ночью, потому что днём интернет умирал.',
+  'В клубе пахло пылью, дошираком и дешёвым кофе.',
+  'NFS Underground казалась красивее настоящего города.',
+  'ICQ пищала — и сердце реально ускорялось.',
+  'Сервер full. Ждите слот. И мы ждали.',
+  'Сохраняла его SMS, пока телефон не попросил удалить память.'
 ];
 function capsuleSavedList(){
   try{return JSON.parse(localStorage.getItem('capsule2007_owned_cells')||'[]')}catch(e){return[]}
@@ -74,40 +58,25 @@ function capsuleOwnerName(n){
   return names[Math.abs((Number(n)*7+String(n).charCodeAt(0)))%names.length];
 }
 function capsuleCellRecord(n){
+  const saved=capsuleSavedFor(n);
+  if(saved) return {cell:Number(n), nickname:saved.nickname, year:saved.year, text:saved.text, ownerCode:saved.ownerCode, local:true, status:saved.status||'pending'};
   const taken=(typeof seededTakenCell==='function') ? seededTakenCell(n) : false;
-  if(taken) return {cell:Number(n), nickname:'редакция Capsule2007', year:String(2004+(Number(n)%5)), text:capsuleSeedText(n), local:false, status:'seed'};
+  if(taken) return {cell:Number(n), nickname:capsuleOwnerName(n), year:String(2004+(Number(n)%5)), text:capsuleSeedText(n), local:false, status:'published'};
   return null;
 }
 function openOccupiedCell(n){
   const r=capsuleCellRecord(n);
   if(!r){return}
-  const isSeed = r.status === 'seed';
-  const title = 'Ячейка #'+padCell(n);
-  const body = isSeed
-    ? `Статус: стартовый фрагмент · нулевой слой архива
-Источник: редакция Capsule2007
-Год: ${r.year}
-
-“${r.text}”
-
-Постоянный адрес капсулы:
-capsule2007.ru/cell/${padCell(n)}`
-    : `Статус: ${r.status || 'опубликована'}
-Владелец: ${r.nickname}
-Год: ${r.year}
-
-“${r.text}”
-
-Постоянный адрес капсулы:
-capsule2007.ru/cell/${padCell(n)}`;
-  openActionModal(title, body);
+  const status = r.local ? 'твоя локальная капсула · ожидает модерации' : 'опубликована';
+  openActionModal('Ячейка #'+padCell(n), `Статус: ${status}\nВладелец: ${r.nickname}\nГод: ${r.year}\n\n“${r.text}”\n\nПубличная ссылка:\ncapsule2007.ru/cell/${padCell(n)}`);
 }
 window.openOccupiedCell=openOccupiedCell;
 
 function ownerForCell(n){return capsuleOwners[Math.abs((n*7+n.toString().charCodeAt(0)))%capsuleOwners.length]}
 function seededTakenCell(n){
   if(specialArchiveCells.has(n)) return false;
-  return startArchiveCells.has(Number(n));
+  const x=Math.sin(n*12.9898)*43758.5453;
+  return (x-Math.floor(x)) < (START_OCCUPIED/TOTAL_CELLS);
 }
 const grid=document.getElementById('cellGrid');
 
@@ -199,13 +168,13 @@ function updateReserveState(){
     const label='#'+padCell(selectedArchiveCell);
     if(quick){quick.disabled=false;quick.classList.add('isActive');quick.textContent='Занять ячейку '+label;}
     if(cellInput) cellInput.value=label;
-    if(preview) preview.textContent=`Постоянный адрес после оплаты:\ncapsule2007.ru/cell/${padCell(selectedArchiveCell)}\nКод владельца появится только после успешной оплаты.`;
+    if(preview) preview.textContent=`Будущая ссылка:\ncapsule2007.ru/cell/${padCell(selectedArchiveCell)}\nКод владельца появится после оплаты.`;
     if(submit){submit.disabled=false;submit.textContent='Продолжить к оплате 107 ₽';}
-    if(notice && !notice.textContent) notice.textContent='Ячейка выбрана. Напиши до 160 символов прошлого — дальше создадим заявку на оплату 107 ₽.';
+    if(notice && !notice.textContent) notice.textContent='Ячейка выбрана. Напиши 160 символов прошлого — дальше будет переход к оплате 107 ₽.';
   }else{
     if(quick){quick.disabled=true;quick.classList.remove('isActive');quick.textContent='Выбери свободную ячейку';}
     if(cellInput) cellInput.value='Ячейка ещё не выбрана';
-    if(preview) preview.textContent='Постоянный адрес появится после оплаты.';
+    if(preview) preview.textContent='Публичная ссылка появится после выбора ячейки.';
     if(submit){submit.disabled=true;submit.textContent='Сначала выбери ячейку';}
     if(notice) notice.textContent='';
   }
@@ -218,11 +187,10 @@ function renderArchiveCells(){
   const label=document.getElementById('sectorLabel');
   if(label) label.textContent=`Сектор ${String(currentSector).padStart(2,'0')} · #${padCell(start)}–#${padCell(end)}`;
   const progressText=document.getElementById('progressText');
-  if(progressText){const free=TOTAL_CELLS-START_ARCHIVE_COUNT-USER_CAPSULES_COUNT;progressText.textContent=`Нулевой слой: ${START_ARCHIVE_COUNT} стартовых капсул. Пользовательских: ${USER_CAPSULES_COUNT}. Свободно: ${free}.`;}
+  if(progressText){const occ=occupiedCount2007();progressText.textContent=`Занято ${occ} из ${TOTAL_CELLS}. Осталось ${TOTAL_CELLS-occ} ячеек.`;}
   const progressBar=document.getElementById('progressBar');
-  if(progressBar) progressBar.style.width=`${((START_ARCHIVE_COUNT+USER_CAPSULES_COUNT)/TOTAL_CELLS)*100}%`;
+  if(progressBar) progressBar.style.width=`${(occupiedCount2007()/TOTAL_CELLS)*100}%`;
   renderTopCounters2007();
-  startArchivePulse();
   for(let n=start;n<=end;n++){
     const d=document.createElement('button');
     d.type='button';
@@ -374,32 +342,28 @@ if(reserveForm) reserveForm.addEventListener('submit',(e)=>{
 const closeModalBtn=document.getElementById('actionModalClose');
 if(closeModalBtn) closeModalBtn.addEventListener('click',closeActionModal);
 document.getElementById('actionModal')?.addEventListener('click',(e)=>{if(e.target.id==='actionModal')closeActionModal()});
-document.getElementById('btnAbout')?.addEventListener('click',()=>openActionModal('О проекте',`Capsule2007 — цифровой архив памяти 2000-х.
+document.getElementById('btnAbout')?.addEventListener('click',()=>openActionModal('О проекте',`Capsule2007 — это цифровой архив памяти 2000-х.
 
-Здесь не ведут блог и не собирают лайки.
+Здесь не публикуют посты и не собирают лайки.
 
-Здесь выбирают ячейку, оставляют до 160 символов прошлого и закрепляют своё место в конечном архиве из 20 007 ячеек.
+Здесь выбирают ячейку, оставляют 160 символов прошлого и получают свой номер в конечном архиве из 20 007 мест.
 
-Нулевой слой архива уже содержит стартовые редакционные фрагменты — они нужны, чтобы показать тон и атмосферу проекта. Это не оплаченные пользовательские капсулы.
+После заполнения архив закроется для новых записей и останется в сети в режиме чтения.
 
-После успешной оплаты пользовательская ячейка получает номер, код владельца и постоянный адрес.
-
-Когда архив заполнится, новые записи будут закрыты, а Capsule2007 останется в режиме чтения.`));
+Ты покупаешь не текст. Ты занимаешь место внутри цифрового артефакта эпохи.`));
 document.getElementById('btnRules')?.addEventListener('click',()=>openActionModal('Правила архива',`1. Одна ячейка = одна капсула.
 
 2. До 160 символов — как старая SMS.
 
-3. Без рекламы, спама, травли, политики, незаконного контента и чужих персональных данных.
+3. Без рекламы, спама, травли, политики, персональных данных третьих лиц и запрещённого контента.
 
-4. До успешной оплаты ячейка не считается занятой.
+4. Капсулы проходят ручную модерацию.
 
-5. После оплаты капсула получает статус “ожидает модерации”.
+5. До публикации текст можно поправить через “Моя ячейка”: номер + код владельца.
 
-6. До публикации текст можно будет поправить через “Моя ячейка” по номеру и коду владельца.
+6. После публикации капсула становится архивной записью. Менять её нельзя — можно открыть, скопировать ссылку или запросить скрытие.
 
-7. После публикации капсула становится архивной записью. Её нельзя свободно переписывать — только запросить скрытие/исправление через поддержку.
-
-8. Стартовые капсулы нулевого слоя добавлены редакцией проекта и не изображают реальные покупки.`));
+7. Если запись нарушает правила, администрация может скрыть её без возврата средств.`));
 document.getElementById('btnLogin')?.addEventListener('click',()=>openMyCellModal());
 
 /* === My Cell modal === */
@@ -577,7 +541,7 @@ qTick();
     }else{
       if(b){b.disabled=true;b.classList.remove('isActive');b.textContent='Выбери свободную ячейку';}
       if(inp) inp.value='Ячейка ещё не выбрана';
-      if(prev) prev.textContent='Постоянный адрес появится после оплаты.';
+      if(prev) prev.textContent='Публичная ссылка появится после выбора ячейки.';
       if(submit){submit.disabled=true;submit.textContent='Сначала выбери ячейку';}
     }
   }
@@ -694,8 +658,6 @@ if (typeof playCellSound === 'function') { playCellSound = function(){}; }
   }
   document.getElementById('bootEnter2007')?.addEventListener('click', unlockSound);
   document.getElementById('bootGate2007')?.addEventListener('click', unlockSound);
-  window.addEventListener('capsule2007:boot-unlocked', unlockSound, {once:true});
-  if(window.__capsuleBootUnlocked) setTimeout(unlockSound, 0);
   window.addEventListener('pointerdown', unlockSound, {once:true, passive:true});
   window.addEventListener('click', unlockSound, {once:true});
   document.addEventListener('click', function(e){

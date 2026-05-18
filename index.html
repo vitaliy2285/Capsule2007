@@ -13,23 +13,13 @@
 </head><body><div class="wrap">
 <header class="hero">
 <div class="hero-left"><div class="logo">CAPSULE<span>2007</span></div><div class="sub">Выбери ячейку, оставь 160 символов прошлого и закрепи своё место в архиве 2000-х.</div><div class="hero-actions"><button class="iconBtn" type="button" id="btnAbout"><b>ⓘ</b>О проекте</button><button class="iconBtn" type="button" id="btnRules"><b>▤</b>Правила</button><button class="iconBtn" type="button" id="btnLogin"><b>▣</b>Моя ячейка</button><button class="iconBtn" type="button" id="btnChooseTop"><b>▦</b>Выбрать ячейку</button></div></div>
-<div class="hero-stat">
-  <div class="hlabel">Всего ячеек</div><div class="hnum" id="statTotal">20007</div>
-  <div class="hlabel">Стартовый архив</div><div class="hnum seedNum" id="statSeed">00217</div>
-  <div class="hlabel">Пользовательских</div><div class="hnum userNum" id="statUser">00000</div>
-  <div class="hlabel">Свободно</div><div class="hnum" id="statFree">19790</div>
-</div>
+<div class="hero-stat"><div class="hlabel">Всего ячеек</div><div class="hnum" id="statTotal">20007</div><div class="hlabel">Свободно</div><div class="hnum" id="statFree">17690</div><div class="hlabel">Занято</div><div class="hnum" id="statTaken" style="color:#c9d4da;text-shadow:none;letter-spacing:3px">2317</div></div>
 <div class="hero-img"><div class="hero-time">23:58<br/>15/07/2007</div></div>
 </header>
 
 <section class="dealStrip">
-  <div><b>Нулевой слой:</b> 217 стартовых капсул добавлены редакцией проекта — это не оплаченные пользователи.</div>
-  <div><b>Твоя капсула:</b> после оплаты получит номер, код владельца и постоянный адрес.</div>
-</section>
-<section class="archivePulse" aria-live="polite">
-  <span>архивный эфир</span>
-  <b id="archivePulseLine">#00049 · стартовый фрагмент открыт</b>
-  <button id="randomCapsuleBtn" type="button">случайная капсула</button>
+  <div><b>Что ты получаешь:</b> номер ячейки · код владельца · публичную ссылку · место в архиве</div>
+  <div><b>Важно:</b> до успешной оплаты ячейка не становится занятой</div>
 </section>
 
 <section id="archive" class="cells archive-grid-section">
@@ -37,7 +27,7 @@
     <div>
       <div class="kicker">archive grid</div>
       <h2>20 007 ячеек памяти</h2>
-      <p>Стартовый слой помечен как архивные фрагменты. Свободные можно выбрать. Красивые номера подсвечены отдельно.</p>
+      <p>Занятые светятся. Свободные можно выбрать. Красивые номера подсвечены отдельно.</p>
     </div>
     <div class="sector-controls">
       <button id="prevSector" type="button">←</button>
@@ -46,7 +36,7 @@
     </div>
   </div>
   <div class="progress-wrap">
-    <span id="progressText">Нулевой слой: 217 стартовых капсул. Пользовательских: 0. Свободно: 19790.</span>
+    <span id="progressText">Занято 2317 из 20007</span>
     <div><i id="progressBar"></i></div>
   </div>
   <div class="cellGrid cell-grid" id="cellGrid"></div>
@@ -66,14 +56,14 @@
     <button id="closeReserveOverlay" class="reserveClose" type="button" aria-label="Закрыть">×</button>
     <div class="kicker">reserve cell · access protocol</div>
     <h2>Занять ячейку</h2>
-    <p>Ты занимаешь не комментарий, а место в архиве. После оплаты ячейка получает номер, код владельца и постоянный адрес. До модерации текст можно поправить; после публикации капсула становится архивной записью.</p>
+    <p>Ты занимаешь не комментарий, а место в архиве. После оплаты ячейка получает номер, публичную ссылку и код владельца. До модерации текст можно поправить; после публикации капсула становится архивной записью.</p>
     <div class="reserveGrid">
       <div class="reserveBox reserveHint">
         <div class="reserveLabel">Выбранная ячейка</div>
         <input id="reserveCellInput" class="reserveInput" readonly value="Ячейка ещё не выбрана" />
         <code id="reservePreview">После выбора появятся:
 — номер ячейки;
-— постоянный адрес;
+— будущая ссылка;
 — код владельца после оплаты.</code>
         <div class="reserveNotice" id="reserveNotice"></div>
       </div>
@@ -171,65 +161,13 @@
 <div id="bootGate2007" class="bootGate" aria-hidden="false">
   <div class="bootBox">
     <div class="bootKicker">CAPSULE2007 · SYSTEM BOOT</div>
-    <h2>WELCOME TO CAPSULE2007</h2>
-    <p>Цифровой архив памяти 2000-х. Нажми, чтобы включить терминал.</p><p class="bootHint">Если кнопка не сработала — нажми Enter или Esc.</p>
-    <button id="bootEnter2007" type="button">[ ENTER ARCHIVE ]</button>
+    <h2>Нажми, чтобы войти в архив</h2>
+    <p>Тап/клик запускает звук, QIP и ночной режим терминала.</p>
+    <button id="bootEnter2007" type="button">[ ВКЛЮЧИТЬ СИСТЕМУ ]</button>
   </div>
 </div>
 <div id="soundUnlock2007">SOUND: TAP / CLICK</div>
 
-
-
-<script>
-(function(){
-  function hideBoot(){
-    var gate = document.getElementById('bootGate2007');
-    var sound = document.getElementById('soundUnlock2007');
-    if(gate){
-      gate.classList.add('isHidden');
-      gate.setAttribute('aria-hidden','true');
-      gate.style.display='none';
-      gate.style.pointerEvents='none';
-    }
-    if(sound){
-      sound.classList.add('hidden');
-      sound.style.display='none';
-    }
-    window.__capsuleBootUnlocked = true;
-    try{
-      window.dispatchEvent(new CustomEvent('capsule2007:boot-unlocked'));
-    }catch(e){}
-  }
-  function unlock(e){
-    if(e){
-      e.preventDefault && e.preventDefault();
-      e.stopPropagation && e.stopPropagation();
-    }
-    hideBoot();
-  }
-  document.addEventListener('DOMContentLoaded', function(){
-    var btn = document.getElementById('bootEnter2007');
-    var gate = document.getElementById('bootGate2007');
-    if(btn){
-      btn.addEventListener('click', unlock, true);
-      btn.addEventListener('pointerdown', unlock, true);
-      btn.addEventListener('touchstart', unlock, {capture:true, passive:false});
-    }
-    if(gate){
-      gate.addEventListener('click', function(e){
-        if(e.target === gate || e.target.closest && e.target.closest('#bootEnter2007')) unlock(e);
-      }, true);
-      gate.addEventListener('pointerdown', function(e){
-        if(e.target === gate || e.target.closest && e.target.closest('#bootEnter2007')) unlock(e);
-      }, true);
-    }
-    // аварийный выход: Enter / Space / Esc
-    document.addEventListener('keydown', function(e){
-      if(e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') unlock(e);
-    }, true);
-  });
-})();
-</script>
 
 <script src="js/app.js" defer></script>
 <script src="js/production-api.js" defer></script>
