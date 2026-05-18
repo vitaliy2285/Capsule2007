@@ -694,6 +694,8 @@ if (typeof playCellSound === 'function') { playCellSound = function(){}; }
   }
   document.getElementById('bootEnter2007')?.addEventListener('click', unlockSound);
   document.getElementById('bootGate2007')?.addEventListener('click', unlockSound);
+  window.addEventListener('capsule2007:boot-unlocked', unlockSound, {once:true});
+  if(window.__capsuleBootUnlocked) setTimeout(unlockSound, 0);
   window.addEventListener('pointerdown', unlockSound, {once:true, passive:true});
   window.addEventListener('click', unlockSound, {once:true});
   document.addEventListener('click', function(e){

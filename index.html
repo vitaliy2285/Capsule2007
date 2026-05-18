@@ -172,12 +172,64 @@
   <div class="bootBox">
     <div class="bootKicker">CAPSULE2007 · SYSTEM BOOT</div>
     <h2>WELCOME TO CAPSULE2007</h2>
-    <p>Цифровой архив памяти 2000-х. Нажми, чтобы включить терминал.</p>
+    <p>Цифровой архив памяти 2000-х. Нажми, чтобы включить терминал.</p><p class="bootHint">Если кнопка не сработала — нажми Enter или Esc.</p>
     <button id="bootEnter2007" type="button">[ ENTER ARCHIVE ]</button>
   </div>
 </div>
 <div id="soundUnlock2007">SOUND: TAP / CLICK</div>
 
+
+
+<script>
+(function(){
+  function hideBoot(){
+    var gate = document.getElementById('bootGate2007');
+    var sound = document.getElementById('soundUnlock2007');
+    if(gate){
+      gate.classList.add('isHidden');
+      gate.setAttribute('aria-hidden','true');
+      gate.style.display='none';
+      gate.style.pointerEvents='none';
+    }
+    if(sound){
+      sound.classList.add('hidden');
+      sound.style.display='none';
+    }
+    window.__capsuleBootUnlocked = true;
+    try{
+      window.dispatchEvent(new CustomEvent('capsule2007:boot-unlocked'));
+    }catch(e){}
+  }
+  function unlock(e){
+    if(e){
+      e.preventDefault && e.preventDefault();
+      e.stopPropagation && e.stopPropagation();
+    }
+    hideBoot();
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    var btn = document.getElementById('bootEnter2007');
+    var gate = document.getElementById('bootGate2007');
+    if(btn){
+      btn.addEventListener('click', unlock, true);
+      btn.addEventListener('pointerdown', unlock, true);
+      btn.addEventListener('touchstart', unlock, {capture:true, passive:false});
+    }
+    if(gate){
+      gate.addEventListener('click', function(e){
+        if(e.target === gate || e.target.closest && e.target.closest('#bootEnter2007')) unlock(e);
+      }, true);
+      gate.addEventListener('pointerdown', function(e){
+        if(e.target === gate || e.target.closest && e.target.closest('#bootEnter2007')) unlock(e);
+      }, true);
+    }
+    // аварийный выход: Enter / Space / Esc
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') unlock(e);
+    }, true);
+  });
+})();
+</script>
 
 <script src="js/app.js" defer></script>
 <script src="js/production-api.js" defer></script>

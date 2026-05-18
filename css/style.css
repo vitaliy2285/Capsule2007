@@ -216,3 +216,30 @@ body.modal-open{overflow:hidden;}
   .archivePulse b{font-size:12px}
   .hnum{font-size:26px;letter-spacing:5px}
 }
+
+/* V7 boot hard clickable fix */
+.bootGate{
+  pointer-events:auto!important;
+  z-index:2147483000!important;
+}
+.bootBox, .bootBox *{
+  pointer-events:auto!important;
+}
+#bootEnter2007{
+  position:relative!important;
+  z-index:2147483001!important;
+  pointer-events:auto!important;
+  user-select:none;
+  -webkit-tap-highlight-color:rgba(156,255,79,.22);
+  animation:bootBtnPulse 1.35s ease-in-out infinite;
+}
+@keyframes bootBtnPulse{
+  0%,100%{box-shadow:0 0 18px rgba(156,255,79,.14), inset 0 0 10px rgba(156,255,79,.04)}
+  50%{box-shadow:0 0 34px rgba(156,255,79,.34), inset 0 0 14px rgba(156,255,79,.10)}
+}
+.bootGate.isHidden{
+  display:none!important;
+  pointer-events:none!important;
+}
+
+.bootHint{font-size:12px!important;color:#78909c!important;margin-top:-6px!important;opacity:.85}
