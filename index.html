@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<!-- Capsule2007 production preview: images extracted to /assets, JS events included -->
+<title>Capsule2007 — СИЛЬНО</title>
+
+
+
+<link rel="stylesheet" href="css/style.css">
+</head><body><div class="wrap">
+<header class="hero">
+<div class="hero-left"><div class="logo">CAPSULE<span>2007</span></div><div class="sub">Выбери ячейку, оставь 160 символов прошлого и закрепи своё место в архиве 2000-х.</div><div class="hero-actions"><button class="iconBtn" type="button" id="btnAbout"><b>ⓘ</b>О проекте</button><button class="iconBtn" type="button" id="btnRules"><b>▤</b>Правила</button><button class="iconBtn" type="button" id="btnLogin"><b>▣</b>Моя ячейка</button><button class="iconBtn" type="button" id="btnChooseTop"><b>▦</b>Выбрать ячейку</button></div></div>
+<div class="hero-stat"><div class="hlabel">Всего ячеек</div><div class="hnum" id="statTotal">20007</div><div class="hlabel">Свободно</div><div class="hnum" id="statFree">17690</div><div class="hlabel">Занято</div><div class="hnum" id="statTaken" style="color:#c9d4da;text-shadow:none;letter-spacing:3px">2317</div></div>
+<div class="hero-img"><div class="hero-time">23:58<br/>15/07/2007</div></div>
+</header>
+
+<section class="dealStrip">
+  <div><b>Что ты получаешь:</b> номер ячейки · код владельца · публичную ссылку · место в архиве</div>
+  <div><b>Важно:</b> до успешной оплаты ячейка не становится занятой</div>
+</section>
+
+<section id="archive" class="cells archive-grid-section">
+  <div class="section-head cellsHead">
+    <div>
+      <div class="kicker">archive grid</div>
+      <h2>20 007 ячеек памяти</h2>
+      <p>Занятые светятся. Свободные можно выбрать. Красивые номера подсвечены отдельно.</p>
+    </div>
+    <div class="sector-controls">
+      <button id="prevSector" type="button">←</button>
+      <strong id="sectorLabel">Сектор 01</strong>
+      <button id="nextSector" type="button">→</button>
+    </div>
+  </div>
+  <div class="progress-wrap">
+    <span id="progressText">Занято 2317 из 20007</span>
+    <div><i id="progressBar"></i></div>
+  </div>
+  <div class="cellGrid cell-grid" id="cellGrid"></div>
+  <div class="legendRow">
+    <div class="legend">
+      <span><i class="free"></i> свободна</span>
+      <span><i class="taken"></i> занята</span>
+      <span><i class="rare"></i> красивый номер</span>
+      <span><i class="mine"></i> выбрана</span>
+    </div>
+    <button id="quickReserveBtn" class="reserveCellBtn" type="button" disabled>Выбери свободную ячейку</button>
+  </div>
+</section>
+
+<section id="reserveCellBlock" class="reservePanel" aria-hidden="true">
+  <div class="reserveOverlayBox">
+    <button id="closeReserveOverlay" class="reserveClose" type="button" aria-label="Закрыть">×</button>
+    <div class="kicker">reserve cell · access protocol</div>
+    <h2>Занять ячейку</h2>
+    <p>Ты занимаешь не комментарий, а место в архиве. После оплаты ячейка получает номер, публичную ссылку и код владельца. До модерации текст можно поправить; после публикации капсула становится архивной записью.</p>
+    <div class="reserveGrid">
+      <div class="reserveBox reserveHint">
+        <div class="reserveLabel">Выбранная ячейка</div>
+        <input id="reserveCellInput" class="reserveInput" readonly value="Ячейка ещё не выбрана" />
+        <code id="reservePreview">После выбора появятся:
+— номер ячейки;
+— будущая ссылка;
+— код владельца после оплаты.</code>
+        <div class="reserveNotice" id="reserveNotice"></div>
+      </div>
+      <form id="reserveForm" class="reserveBox">
+        <label class="reserveLabel" for="reserveName">Ник / имя</label>
+        <input id="reserveName" class="reserveInput" maxlength="24" placeholder="Аноним" />
+        <label class="reserveLabel" for="reserveYear" style="margin-top:10px">Год воспоминания</label>
+        <select id="reserveYear" class="reserveSelect"></select>
+        <label class="reserveLabel" for="reserveMemory" style="margin-top:10px">Твоя капсула — до 160 символов</label>
+        <textarea id="reserveMemory" class="reserveTextarea" maxlength="160" placeholder="Ночь. Winamp. ICQ. И завтра в школу."></textarea>
+        <div class="reserveCounter"><span>Лимит старой SMS</span><b><span id="reserveChars">0</span>/160</b></div>
+        <button id="reserveSubmitBtn" class="reserveSubmit" type="submit" disabled>Сначала выбери ячейку</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="section cdrSection fixedSection">
+<div>
+<h2>CD-R / DVD-R / болванки</h2>
+<p>Маркером подписанные диски, сборники “Всё нужное”, драйвера, игры, клипы, обложки из ларька и вечный вопрос: “У тебя Nero есть?”</p>
+<div class="tags"><span class="tag">CD-RW</span><span class="tag">DVD-R</span><span class="tag">Nero</span><span class="tag">700 MB</span></div>
+</div>
+<div class="mediaBox cdrPhotoBox">
+<img alt="CD-RW 700MB шпиндель" src="assets/images/capsule2007_02.jpg"/>
+<div class="cdrText cdrTextOverlay">CD-RW<br/>700MB<br/>52x<br/>“ИГРЫ 2007”</div>
+<div class="cap">болванки / archive media</div>
+</div>
+</section>
+
+<section class="section clubSection fixedSection">
+<div>
+<h2>Компьютерные клубы</h2>
+<p>Не глянцевая реконструкция, а настоящая память: CRT-мониторы, пластиковые наушники, провода под ногами, очередь на de_dust2 и админ за стойкой.</p>
+<div class="tags"><span class="tag">CS 1.6</span><span class="tag">LAN</span><span class="tag">CRT</span><span class="tag">ночные катки</span></div>
+<div class="propCard compactProps">
+<div class="propImgs"><img alt="Jaguar Original" src="assets/images/capsule2007_03.jpg"/><img alt="Molotov cocktail" src="assets/images/capsule2007_04.jpg"/></div>
+<p>Ну вы поняли: кто в теме — тот помнит. Пусть просто лежат здесь, как реквизит той ночи)))</p>
+</div>
+</div>
+<div class="clubTwoOnly">
+<div class="mediaBox clubCard">
+<img alt="Компьютерный клуб ночью" src="assets/images/capsule2007_05.jpg"/>
+<div class="cap">after midnight</div>
+</div>
+<div class="mediaBox clubCard">
+<img alt="Counter-Strike 1.6" src="assets/images/capsule2007_06.jpg"/>
+<div class="cap">Play On Lan</div>
+</div>
+</div>
+</section>
+
+<section class="section qipWrap fixedQipSection">
+<div>
+<h2>ICQ / QIP — живой диалог</h2>
+<p>Ночной общий чат: четыре ника, короткие реплики, паузы и то самое ожидание, когда строка «печатает...» значит больше самого сообщения.</p>
+<div class="tags"><span class="tag">печатает...</span><span class="tag">last seen</span><span class="tag">QIP 2005</span></div>
+</div>
+<div class="qip stableQip">
+<div class="qbar"><span>✿ QIP 2005</span><span>_ □ ×</span></div>
+<div class="qbody">
+<aside class="contacts">
+<b>Онлайн <span>4/17</span></b>
+<div class="contact">Костя</div><div class="contact">Данил</div><div class="contact">Лена</div><div class="contact">Игорь</div>
+<b class="off">Оффлайн <span>13/17</span></b>
+<div class="contact offline">Света</div><div class="contact offline">Макс</div><div class="contact offline">Жека</div><div class="contact offline">Юля</div><div class="contact offline">Вова</div>
+</aside>
+<main class="chat stableChat" id="chat">
+<div class="qchat-log" id="qipMessages"></div>
+<div class="qtyping" id="qipTyping">System: соединение установлено...</div>
+<div class="qinput"></div>
+</main>
+<aside class="qside"><div class="flower">✿</div><b>QIP</b><span>2005</span><input/><button>Найти</button><button>Меню</button></aside>
+</div>
+</div>
+</section>
+<section class="section"><div><h2>Кнопочные телефоны</h2><p>Nokia, Motorola, Siemens — без сенсоров, без GPS, без вайфая. Только звонки, SMS и змейка на пару часов.</p><div class="tags"><span class="tag">NOKIA</span><span class="tag">MOTOROLA</span><span class="tag">SIEMENS</span><span class="tag">SMS</span></div></div><div class="mediaBox"><img alt="popular phones of 2000s" class="phonesImg" src="assets/images/capsule2007_07.jpg"/></div></section>
+<section class="section"><div><h2>Winamp / папка D:\Музыка</h2><p>Теперь плеер живёт: в строке идёт только текущий трек, playlist кликается, кнопки переключают треки, а прогресс можно перематывать.</p><div class="tags"><span class="tag">Winamp 2.95</span><span class="tag">MP3</span><span class="tag">playlist</span><span class="tag">seek bar</span></div></div><div class="winamp winampReal" id="winampBox"><div class="winTop"><span>WINAMP 2.95</span><span id="winampStatus">PLAY</span><span>_ □ ✕</span></div><div class="winMeta"><span id="winampTime">00:00</span><span>128 KBPS</span><span>44 KHZ</span><span>STEREO</span></div><div class="winDisplay"><span id="winampMarquee">♪ Linkin Park - In The End · 128 kbps · stereo</span></div><div class="winSeek" id="winampSeek" title="Перемотка"><i id="winampSeekBar"></i></div><div class="eq" id="winampEq"><i class="bar" style="animation-delay:0.0s"></i><i class="bar" style="animation-delay:0.13s"></i><i class="bar" style="animation-delay:0.26s"></i><i class="bar" style="animation-delay:0.39s"></i><i class="bar" style="animation-delay:0.52s"></i><i class="bar" style="animation-delay:0.65s"></i><i class="bar" style="animation-delay:0.78s"></i><i class="bar" style="animation-delay:0.91s"></i><i class="bar" style="animation-delay:1.04s"></i><i class="bar" style="animation-delay:1.17s"></i><i class="bar" style="animation-delay:1.3s"></i><i class="bar" style="animation-delay:1.43s"></i><i class="bar" style="animation-delay:1.56s"></i><i class="bar" style="animation-delay:1.69s"></i><i class="bar" style="animation-delay:1.82s"></i><i class="bar" style="animation-delay:1.95s"></i><i class="bar" style="animation-delay:2.08s"></i><i class="bar" style="animation-delay:2.21s"></i><i class="bar" style="animation-delay:2.34s"></i><i class="bar" style="animation-delay:2.47s"></i><i class="bar" style="animation-delay:2.6s"></i><i class="bar" style="animation-delay:2.73s"></i><i class="bar" style="animation-delay:2.86s"></i><i class="bar" style="animation-delay:2.99s"></i><i class="bar" style="animation-delay:3.12s"></i><i class="bar" style="animation-delay:3.25s"></i><i class="bar" style="animation-delay:3.38s"></i><i class="bar" style="animation-delay:3.51s"></i></div><div class="btns"><button id="winPrev" type="button">◀◀</button><button id="winPlay" type="button">▶</button><button id="winPause" type="button">▮▮</button><button id="winStop" type="button">■</button><button id="winNext" type="button">▶▶</button><button type="button">EQ</button><button type="button">PL</button></div><div class="playlist" id="winampPlaylist"></div></div></section>
+<section class="section"><div><h2>Игры, которые остались</h2><p>CS 1.6, NFS Underground, Warcraft III, Max Payne, Dead Space 2 — не список игр, а карта вечеров, когда интернет казался больше мира.</p><div class="tags"><span class="tag">CS 1.6</span><span class="tag">NFS</span><span class="tag">Warcraft III</span><span class="tag">Max Payne</span></div></div><div class="gameGrid"><img alt="Max Payne" src="assets/images/capsule2007_08.jpg"/><img alt="NFS Underground" src="assets/images/capsule2007_09.jpg"/><img alt="Warcraft III" src="assets/images/capsule2007_10.jpg"/><img alt="Dead Space 2" src="assets/images/capsule2007_11.jpg"/></div></section>
+<footer class="footer"><span>© Capsule2007 — цифровой архив эпохи</span><span class="online">● ARCHIVE ONLINE</span><span>20 007 ячеек · потом read-only.</span></footer>
+</div>
+<div id="actionModal" class="actionModal" aria-hidden="true">
+  <div class="actionModalBox">
+    <h3 id="actionModalTitle" class="actionModalTitle">Capsule2007</h3>
+    <div id="actionModalText" class="actionModalText"></div>
+    <button id="actionModalClose" class="actionModalClose" type="button">Закрыть</button>
+  </div>
+</div>
+
+
+
+
+
+
+<div id="bootGate2007" class="bootGate" aria-hidden="false">
+  <div class="bootBox">
+    <div class="bootKicker">CAPSULE2007 · SYSTEM BOOT</div>
+    <h2>Нажми, чтобы войти в архив</h2>
+    <p>Тап/клик запускает звук, QIP и ночной режим терминала.</p>
+    <button id="bootEnter2007" type="button">[ ВКЛЮЧИТЬ СИСТЕМУ ]</button>
+  </div>
+</div>
+<div id="soundUnlock2007">SOUND: TAP / CLICK</div>
+
+
+<script src="js/app.js" defer></script>
+<script src="js/production-api.js" defer></script>
+</body></html>

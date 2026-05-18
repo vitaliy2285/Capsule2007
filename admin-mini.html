@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Capsule2007 Admin Mini</title>
+<style>
+body{background:#020912;color:#dff8ff;font-family:Courier New,monospace;padding:20px}
+input,textarea,button{background:#061323;color:#dff8ff;border:1px solid #1d6c95;padding:10px;margin:6px 0;width:100%;max-width:520px}
+button{cursor:pointer;background:#0a2842}
+pre{white-space:pre-wrap;border:1px solid #1d6c95;padding:12px;max-width:720px}
+</style></head>
+<body>
+<h1>Capsule2007 Admin Mini</h1>
+<p>Мини-заглушка. Основная админка позже.</p>
+<input id="token" placeholder="ADMIN_TOKEN">
+<input id="id" placeholder="capsule uuid">
+<button onclick="moderate('publish')">publish</button>
+<button onclick="moderate('reject')">reject</button>
+<button onclick="moderate('hide')">hide</button>
+<pre id="out"></pre>
+<script>
+async function moderate(action){
+  const res=await fetch('/.netlify/functions/admin-moderate',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':token.value},body:JSON.stringify({id:id.value,action})});
+  out.textContent=JSON.stringify(await res.json(),null,2);
+}
+</script>
+</body></html>
