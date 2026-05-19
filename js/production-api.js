@@ -92,8 +92,14 @@
         if (!cellNumber) continue;
         state.remoteCells.set(cellNumber, c);
       }
-      state.remoteStats = {occupied_total:Number(data.occupied_total||0), free_total:Number(data.free_total||0)};
+
+      state.remoteStats = {
+        occupied_total: Number(data.occupied_total || 0),
+        free_total: Number(data.free_total || 0)
+      };
+
       window.__capsuleRemoteStats = state.remoteStats;
+
       window.__capsuleRemoteTaken = new Set(
         cells
           .map(cellNumberOf)
