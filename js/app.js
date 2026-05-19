@@ -92,7 +92,7 @@ function playCellSound(kind='select'){
   if(!ctx) return;
   const now=ctx.currentTime;
 
-  // Более солидный механический клик: короткий щелчок + глухой корпусной удар + отпускание.
+  // Более солидный механический клик: мягкий щелчок + глухой корпусной удар.
   const out=ctx.createGain();
   out.gain.setValueAtTime(0.0001,now);
   out.gain.linearRampToValueAtTime(kind==='select'?0.48:0.34,now+0.004);
@@ -131,31 +131,7 @@ function playCellSound(kind='select'){
   body.connect(bodyGain); bodyGain.connect(out);
   body.start(now); body.stop(now+0.13);
 
-  // 3) короткий металлический пик в начале.
-  const tick=ctx.createOscillator();
-  const tickGain=ctx.createGain();
-  tick.type='square';
-  tick.frequency.setValueAtTime(kind==='select'?2450:1680,now);
-  tick.frequency.exponentialRampToValueAtTime(kind==='select'?1180:760,now+0.018);
-  tickGain.gain.setValueAtTime(0.0001,now);
-  tickGain.gain.linearRampToValueAtTime(kind==='select'?0.16:0.10,now+0.002);
-  tickGain.gain.exponentialRampToValueAtTime(0.0001,now+0.032);
-  tick.connect(tickGain); tickGain.connect(out);
-  tick.start(now); tick.stop(now+0.035);
-
-  // 4) для снятия выбора — лёгкий второй «отпуск» после паузы.
-  if(kind!=='select'){
-    const rel=ctx.createOscillator();
-    const relGain=ctx.createGain();
-    rel.type='square';
-    rel.frequency.setValueAtTime(620,now+0.055);
-    rel.frequency.exponentialRampToValueAtTime(390,now+0.085);
-    relGain.gain.setValueAtTime(0.0001,now+0.052);
-    relGain.gain.linearRampToValueAtTime(0.11,now+0.058);
-    relGain.gain.exponentialRampToValueAtTime(0.0001,now+0.098);
-    rel.connect(relGain); relGain.connect(out);
-    rel.start(now+0.052); rel.stop(now+0.105);
-  }
+  // Без дополнительного high-pitch/release тикa: только мягкий drawer/body/noise.
 }
 function updateReserveState(){
   const quick=document.getElementById('quickReserveBtn');
@@ -589,8 +565,8 @@ qTick();
   bg.volume = 0.56;
   const icq = new Audio('assets/audio/icq-message.mp3');
   const isMobile = window.matchMedia('(max-width: 760px)').matches;
-  // ICQ notification is intentionally ultra-quiet to avoid distracting mobile playback.
-  icq.volume = isMobile ? 0.015 : 0.025;
+  // ICQ notification: radical attenuation, especially on mobile.
+  icq.volume = isMobile ? 0.003 : 0.01;
   const cellOpen = new Audio('assets/audio/cell-open.mp3');
   cellOpen.volume = 0.78;
   const cellClose = new Audio('assets/audio/cell-close.mp3');
