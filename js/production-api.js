@@ -54,6 +54,10 @@
   }
 
   function pad(n){ return String(n).padStart(5,'0'); }
+  function cellNumberOf(raw){
+    const n = Number(raw?.cell_number ?? raw?.cell ?? raw?.number);
+    return Number.isFinite(n) ? n : 0;
+  }
 
   async function apiFetch(url, options){
     const res = await fetch(url, {
@@ -83,11 +87,17 @@
         : (Array.isArray(data.data) ? data.data : []);
       state.remoteCells.clear();
       for(const c of cells){
-        state.remoteCells.set(Number(c.cell_number), c);
+        const cellNumber = cellNumberOf(c);
+        if(!cellNumber) continue;
+        state.remoteCells.set(cellNumber, c);
       }
       state.remoteStats = {occupied_total:Number(data.occupied_total||0), free_total:Number(data.free_total||0)};
       window.__capsuleRemoteStats = state.remoteStats;
-      window.__capsuleRemoteTaken = new Set(cells.map(c=>Number(c.cell_number)));
+      window.__capsuleRemoteTaken = new Set(
+        cells
+          .map(cellNumberOf)
+          .filter(Boolean)
+      );
       state.lastSectorLoaded = sector;
       emit('sector_loaded', {sector, count:state.remoteCells.size});
       if(typeof renderArchiveCells === 'function') renderArchiveCells();
