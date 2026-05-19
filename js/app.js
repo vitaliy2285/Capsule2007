@@ -1,4 +1,3 @@
-
 const TOTAL_CELLS=20007;
 const SECTOR_SIZE=500;
 const START_OCCUPIED=2317;
@@ -68,7 +67,7 @@ function openOccupiedCell(n){
   const r=capsuleCellRecord(n);
   if(!r){return}
   const status = r.local ? 'твоя локальная капсула · ожидает модерации' : 'опубликована';
-  openActionModal('Ячейка #'+padCell(n), `Статус: ${status}\nВладелец: ${r.nickname}\nГод: ${r.year}\n\n“${r.text}”\n\nПубличная ссылка:\ncapsule2007.ru/cell/${padCell(n)}`);
+  openActionModal('Ячейка #'+padCell(n), `Статус: ${status}\nВладелец: ${r.nickname}\nГод: ${r.year}\n\n“${r.text}”\n\nПостоянный адрес капсулы:\ncapsule2007.ru/cell/${padCell(n)}`);
 }
 window.openOccupiedCell=openOccupiedCell;
 
@@ -168,13 +167,13 @@ function updateReserveState(){
     const label='#'+padCell(selectedArchiveCell);
     if(quick){quick.disabled=false;quick.classList.add('isActive');quick.textContent='Занять ячейку '+label;}
     if(cellInput) cellInput.value=label;
-    if(preview) preview.textContent=`Будущая ссылка:\ncapsule2007.ru/cell/${padCell(selectedArchiveCell)}\nКод владельца появится после оплаты.`;
+    if(preview) preview.textContent=`Будущий постоянный адрес капсулы:\ncapsule2007.ru/cell/${padCell(selectedArchiveCell)}\nКод владельца появится после оплаты.`;
     if(submit){submit.disabled=false;submit.textContent='Продолжить к оплате 107 ₽';}
     if(notice && !notice.textContent) notice.textContent='Ячейка выбрана. Напиши 160 символов прошлого — дальше будет переход к оплате 107 ₽.';
   }else{
     if(quick){quick.disabled=true;quick.classList.remove('isActive');quick.textContent='Выбери свободную ячейку';}
     if(cellInput) cellInput.value='Ячейка ещё не выбрана';
-    if(preview) preview.textContent='Публичная ссылка появится после выбора ячейки.';
+    if(preview) preview.textContent='Постоянный адрес капсулы появится после выбора ячейки.';
     if(submit){submit.disabled=true;submit.textContent='Сначала выбери ячейку';}
     if(notice) notice.textContent='';
   }
@@ -322,7 +321,7 @@ if(reserveForm) reserveForm.addEventListener('submit',(e)=>{
   if(notice)notice.textContent=`Капсула подготовлена: #${padCell(item.cell)} · ${nick} · ${year}.\nКод владельца: ${code}\nУстановка защищённого соединения... дальше здесь будет переход к оплате 107 ₽.`;
   track2007('capsule_prepared',{cell:item.cell,year:item.year});
   const preview=document.getElementById('reservePreview');
-  if(preview)preview.textContent=`Номер: #${padCell(item.cell)}\nКод владельца: ${code}\nСсылка: capsule2007.ru/cell/${padCell(item.cell)}\n\nСохрани эти данные. Без кода восстановление доступа может быть невозможно.`;
+  if(preview)preview.textContent=`Номер: #${padCell(item.cell)}\nКод владельца: ${code}\nПостоянный адрес: capsule2007.ru/cell/${padCell(item.cell)}\n\nСохрани эти данные. Без кода восстановление доступа может быть невозможно.`;
 
   const cellInput=document.getElementById('reserveCellInput');
   if(cellInput) cellInput.value='#'+padCell(item.cell);
@@ -342,28 +341,8 @@ if(reserveForm) reserveForm.addEventListener('submit',(e)=>{
 const closeModalBtn=document.getElementById('actionModalClose');
 if(closeModalBtn) closeModalBtn.addEventListener('click',closeActionModal);
 document.getElementById('actionModal')?.addEventListener('click',(e)=>{if(e.target.id==='actionModal')closeActionModal()});
-document.getElementById('btnAbout')?.addEventListener('click',()=>openActionModal('О проекте',`Capsule2007 — это цифровой архив памяти 2000-х.
-
-Здесь не публикуют посты и не собирают лайки.
-
-Здесь выбирают ячейку, оставляют 160 символов прошлого и получают свой номер в конечном архиве из 20 007 мест.
-
-После заполнения архив закроется для новых записей и останется в сети в режиме чтения.
-
-Ты покупаешь не текст. Ты занимаешь место внутри цифрового артефакта эпохи.`));
-document.getElementById('btnRules')?.addEventListener('click',()=>openActionModal('Правила архива',`1. Одна ячейка = одна капсула.
-
-2. До 160 символов — как старая SMS.
-
-3. Без рекламы, спама, травли, политики, персональных данных третьих лиц и запрещённого контента.
-
-4. Капсулы проходят ручную модерацию.
-
-5. До публикации текст можно поправить через “Моя ячейка”: номер + код владельца.
-
-6. После публикации капсула становится архивной записью. Менять её нельзя — можно открыть, скопировать ссылку или запросить скрытие.
-
-7. Если запись нарушает правила, администрация может скрыть её без возврата средств.`));
+document.getElementById('btnAbout')?.addEventListener('click',()=>openActionModal('О проекте',`Capsule2007 — это цифровой архив памяти 2000-х.\n\nЗдесь не публикуют посты и не собирают лайки.\n\nЗдесь выбирают ячейку, оставляют 160 символов прошлого и получают свой номер в конечном архиве из 20 007 мест.\n\nПосле заполнения архив закроется для новых записей и останется в сети в режиме чтения.\n\nТы покупаешь не текст. Ты занимаешь место внутри цифрового артефакта эпохи.`));
+document.getElementById('btnRules')?.addEventListener('click',()=>openActionModal('Правила архива',`1. Одна ячейка = одна капсула.\n\n2. До 160 символов — как старая SMS.\n\n3. Без рекламы, спама, травли, политики, персональных данных третьих лиц и запрещённого контента.\n\n4. Капсулы проходят ручную модерацию.\n\n5. До публикации текст можно поправить через “Моя ячейка”: номер + код владельца.\n\n6. После публикации капсула становится архивной записью. Менять её нельзя — можно открыть, скопировать ссылку или запросить скрытие.\n\n7. Если запись нарушает правила, администрация может скрыть её без возврата средств.`));
 document.getElementById('btnLogin')?.addEventListener('click',()=>openMyCellModal());
 
 /* === My Cell modal === */
@@ -389,32 +368,12 @@ document.getElementById('myCellOpenBtn')?.addEventListener('click',()=>{
   if(!n || n<1 || n>20007){if(out)out.textContent='Нужен номер ячейки от 00001 до 20007.';return}
   const saved=capsuleSavedFor(n);
   if(saved && code && saved.ownerCode.toUpperCase()===code){
-    if(out)out.textContent=`Доступ подтверждён.
-
-Ячейка: #${padCell(n)}
-Статус: ${saved.status==='published'?'опубликована':'ожидает модерации'}
-Владелец: ${saved.nickname}
-Год: ${saved.year}
-
-“${saved.text}”
-
-Ссылка:
-capsule2007.ru/cell/${padCell(n)}
-
-До публикации здесь можно будет поправить ник, год и текст. После публикации капсула становится архивной записью.`;
+    if(out)out.textContent=`Доступ подтверждён.\n\nЯчейка: #${padCell(n)}\nСтатус: ${saved.status==='published'?'опубликована':'ожидает модерации'}\nВладелец: ${saved.nickname}\nГод: ${saved.year}\n\n“${saved.text}”\n\nПостоянный адрес: capsule2007.ru/cell/${padCell(n)}\n\nДо публикации здесь можно будет поправить ник, год и текст. После публикации капсула становится архивной записью.`;
     return;
   }
   const publicRecord=capsuleCellRecord(n);
   if(publicRecord){
-    if(out)out.textContent=`Эта ячейка занята, но код владельца не совпал.
-
-Публичный просмотр:
-
-#${padCell(n)}
-Владелец: ${publicRecord.nickname}
-Год: ${publicRecord.year}
-
-“${publicRecord.text}”`;
+    if(out)out.textContent=`Эта ячейка занята, но код владельца не совпал.\n\nПубличный просмотр:\n\n#${padCell(n)}\nВладелец: ${publicRecord.nickname}\nГод: ${publicRecord.year}\n\n“${publicRecord.text}”`;
   }else{
     if(out)out.textContent=`Ячейка #${padCell(n)} пока свободна. Её можно выбрать в архивной сетке.`;
   }
@@ -506,8 +465,6 @@ renderTopCounters2007();
 qRender();
 qTick();
 
-
-
 (function(){
   const TOTAL=20007;
   const DESKTOP_SIZE=500;
@@ -536,12 +493,12 @@ qTick();
       const label='#'+pad(selected);
       if(b){b.disabled=false;b.classList.add('isActive');b.textContent='Занять ячейку '+label;}
       if(inp) inp.value=label;
-      if(prev) prev.textContent='Выбрана ячейка: #'+pad(selected)+'\nПосле оплаты: ссылка, код владельца и статус в архиве.';
+      if(prev) prev.textContent='Выбрана ячейка: #'+pad(selected)+'\nПосле оплаты: постоянный адрес капсулы, код владельца и статус в архиве.';
       if(submit){submit.disabled=false;submit.textContent='Продолжить к оплате 107 ₽';}
     }else{
       if(b){b.disabled=true;b.classList.remove('isActive');b.textContent='Выбери свободную ячейку';}
       if(inp) inp.value='Ячейка ещё не выбрана';
-      if(prev) prev.textContent='Публичная ссылка появится после выбора ячейки.';
+      if(prev) prev.textContent='Постоянный адрес капсулы появится после выбора ячейки.';
       if(submit){submit.disabled=true;submit.textContent='Сначала выбери ячейку';}
     }
   }
@@ -619,11 +576,8 @@ qTick();
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
 })();
 
-
-
 /* Synthetic WebAudio music layer disabled: using exact uploaded audio assets only. */
 if (typeof playCellSound === 'function') { playCellSound = function(){}; }
-
 
 /* Capsule2007 separated assets audio layer: background nostalgia + ICQ + cell drawer */
 (function(){
@@ -653,13 +607,20 @@ if (typeof playCellSound === 'function') { playCellSound = function(){}; }
     soundUnlocked = true;
     bg.play().catch(()=>{});
     document.getElementById('soundUnlock2007')?.classList.add('hidden');
-    document.getElementById('bootGate2007')?.classList.add('isHidden');
+    const gateEl = document.getElementById('bootGate2007');
+    if(gateEl){ gateEl.classList.add('isHidden'); gateEl.setAttribute('aria-hidden','true'); }
     track2007('sound_unlocked');
   }
   document.getElementById('bootEnter2007')?.addEventListener('click', unlockSound);
   document.getElementById('bootGate2007')?.addEventListener('click', unlockSound);
   window.addEventListener('pointerdown', unlockSound, {once:true, passive:true});
   window.addEventListener('click', unlockSound, {once:true});
+  // Добавляем клавиши для разблокировки: Enter или пробел
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' || e.key === ' ' || e.code === 'Space'){
+      unlockSound();
+    }
+  });
   document.addEventListener('click', function(e){
     const cell = e.target.closest && e.target.closest('.cell');
     if(!cell) return;
@@ -668,5 +629,4 @@ if (typeof playCellSound === 'function') { playCellSound = function(){}; }
     setTimeout(()=>playClone(wasSelected ? cellClose : cellOpen), 0);
   }, true);
   // ICQ-звук больше НЕ отслеживается через MutationObserver, чтобы не пищать на каждую букву.
-
 })();

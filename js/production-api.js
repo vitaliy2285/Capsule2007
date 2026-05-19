@@ -1,4 +1,3 @@
-
 /*
   Capsule2007 V5 Production Bridge
   --------------------------------
@@ -117,7 +116,7 @@
         const c = data.cell;
         openActionModal(
           'Ячейка #'+pad(c.cell_number),
-          `Статус: ${c.status === 'published' ? 'опубликована' : 'ожидает модерации'}\nВладелец: ${c.nickname || 'Аноним'}\nГод: ${c.memory_year || '2007'}\n\n“${c.message || ''}”\n\nПубличная ссылка:\n${location.origin}/cell/${pad(c.cell_number)}`
+          `Статус: ${c.status === 'published' ? 'опубликована' : 'ожидает модерации'}\nВладелец: ${c.nickname || 'Аноним'}\nГод: ${c.memory_year || '2007'}\n\n“${c.message || ''}”\n\nПостоянный адрес капсулы:\n${location.origin}/cell/${pad(c.cell_number)}`
         );
         return;
       }
@@ -181,7 +180,7 @@
             `Статус: pending_payment\n`+
             `До оплаты она НЕ отображается как занятая.\n\n`+
             `После успешной оплаты появятся:\n`+
-            `— код владельца;\n— публичная ссылка;\n— статус модерации.`;
+            `— код владельца;\n— постоянный адрес капсулы;\n— статус модерации.`;
         }
 
         if(data.payment_url){
@@ -252,7 +251,7 @@
             `Владелец: ${c.nickname || 'Аноним'}\n`+
             `Год: ${c.memory_year || '2007'}\n\n`+
             `“${c.message || ''}”\n\n`+
-            `Ссылка:\n${location.origin}/cell/${pad(c.cell_number)}\n\n`+
+            `Постоянный адрес:\n${location.origin}/cell/${pad(c.cell_number)}\n\n`+
             `Редактирование доступно только до публикации / в пределах окна модерации.`;
         }
       }catch(err){

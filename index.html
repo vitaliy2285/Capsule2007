@@ -18,7 +18,7 @@
 </header>
 
 <section class="dealStrip">
-  <div><b>Что ты получаешь:</b> номер ячейки · код владельца · публичную ссылку · место в архиве</div>
+  <div><b>Что ты получаешь:</b> номер ячейки · код владельца · постоянный адрес капсулы · место в архиве</div>
   <div><b>Важно:</b> до успешной оплаты ячейка не становится занятой</div>
 </section>
 
@@ -56,14 +56,14 @@
     <button id="closeReserveOverlay" class="reserveClose" type="button" aria-label="Закрыть">×</button>
     <div class="kicker">reserve cell · access protocol</div>
     <h2>Занять ячейку</h2>
-    <p>Ты занимаешь не комментарий, а место в архиве. После оплаты ячейка получает номер, публичную ссылку и код владельца. До модерации текст можно поправить; после публикации капсула становится архивной записью.</p>
+    <p>Ты занимаешь не комментарий, а место в архиве. После оплаты ячейка получает номер, постоянный адрес капсулы и код владельца. До модерации текст можно поправить; после публикации капсула становится архивной записью.</p>
     <div class="reserveGrid">
       <div class="reserveBox reserveHint">
         <div class="reserveLabel">Выбранная ячейка</div>
         <input id="reserveCellInput" class="reserveInput" readonly value="Ячейка ещё не выбрана" />
         <code id="reservePreview">После выбора появятся:
 — номер ячейки;
-— будущая ссылка;
+— будущий постоянный адрес капсулы;
 — код владельца после оплаты.</code>
         <div class="reserveNotice" id="reserveNotice"></div>
       </div>
@@ -141,7 +141,9 @@
 </div>
 </section>
 <section class="section"><div><h2>Кнопочные телефоны</h2><p>Nokia, Motorola, Siemens — без сенсоров, без GPS, без вайфая. Только звонки, SMS и змейка на пару часов.</p><div class="tags"><span class="tag">NOKIA</span><span class="tag">MOTOROLA</span><span class="tag">SIEMENS</span><span class="tag">SMS</span></div></div><div class="mediaBox"><img alt="popular phones of 2000s" class="phonesImg" src="assets/images/capsule2007_07.jpg"/></div></section>
-<section class="section"><div><h2>Winamp / папка D:\Музыка</h2><p>Теперь плеер живёт: в строке идёт только текущий трек, playlist кликается, кнопки переключают треки, а прогресс можно перематывать.</p><div class="tags"><span class="tag">Winamp 2.95</span><span class="tag">MP3</span><span class="tag">playlist</span><span class="tag">seek bar</span></div></div><div class="winamp winampReal" id="winampBox"><div class="winTop"><span>WINAMP 2.95</span><span id="winampStatus">PLAY</span><span>_ □ ✕</span></div><div class="winMeta"><span id="winampTime">00:00</span><span>128 KBPS</span><span>44 KHZ</span><span>STEREO</span></div><div class="winDisplay"><span id="winampMarquee">♪ Linkin Park - In The End · 128 kbps · stereo</span></div><div class="winSeek" id="winampSeek" title="Перемотка"><i id="winampSeekBar"></i></div><div class="eq" id="winampEq"><i class="bar" style="animation-delay:0.0s"></i><i class="bar" style="animation-delay:0.13s"></i><i class="bar" style="animation-delay:0.26s"></i><i class="bar" style="animation-delay:0.39s"></i><i class="bar" style="animation-delay:0.52s"></i><i class="bar" style="animation-delay:0.65s"></i><i class="bar" style="animation-delay:0.78s"></i><i class="bar" style="animation-delay:0.91s"></i><i class="bar" style="animation-delay:1.04s"></i><i class="bar" style="animation-delay:1.17s"></i><i class="bar" style="animation-delay:1.3s"></i><i class="bar" style="animation-delay:1.43s"></i><i class="bar" style="animation-delay:1.56s"></i><i class="bar" style="animation-delay:1.69s"></i><i class="bar" style="animation-delay:1.82s"></i><i class="bar" style="animation-delay:1.95s"></i><i class="bar" style="animation-delay:2.08s"></i><i class="bar" style="animation-delay:2.21s"></i><i class="bar" style="animation-delay:2.34s"></i><i class="bar" style="animation-delay:2.47s"></i><i class="bar" style="animation-delay:2.6s"></i><i class="bar" style="animation-delay:2.73s"></i><i class="bar" style="animation-delay:2.86s"></i><i class="bar" style="animation-delay:2.99s"></i><i class="bar" style="animation-delay:3.12s"></i><i class="bar" style="animation-delay:3.25s"></i><i class="bar" style="animation-delay:3.38s"></i><i class="bar" style="animation-delay:3.51s"></i></div><div class="btns"><button id="winPrev" type="button">◀◀</button><button id="winPlay" type="button">▶</button><button id="winPause" type="button">▮▮</button><button id="winStop" type="button">■</button><button id="winNext" type="button">▶▶</button><button type="button">EQ</button><button type="button">PL</button></div><div class="playlist" id="winampPlaylist"></div></div></section>
+<section class="section"><div><h2>Winamp / папка D:\Музыка</h2><p>Теперь плеер живёт: в строке идёт только текущий трек, playlist кликается, кнопки переключают треки, а прогресс можно перематывать.</p><div class="tags"><span class="tag">Winamp 2.95</span><span class="tag">MP3</span><span class="tag">playlist</span><span class="tag">seek bar</span></div></div><div class="winamp winampReal" id="winampBox"><div class="winTop"><span>WINAMP 2.95</span><span id="winampStatus">PLAY</span><span>_ □ ✕</span></div><div class="winMeta"><span id="winampTime">00:00</span><span>128 KBPS</span><span>44 KHZ</span><span>STEREO</span></div><div class="winDisplay"><span id="winampMarquee">♪ Linkin Park - In The End · 128 kbps · stereo</span></div><div class="winSeek" id="winampSeek" title="Перемотка"><i id="winampSeekBar"></i></div><div class="eq" id="winampEq"><i class="bar" style="animation-delay:0.0s"></i><i class="bar" style="animation-delay:0.13s"></i><i class="bar" style="animation-delay:0.26s"></i><i class="bar" 
+style="animation-delay:0.39s"></i><i class="bar" style="animation-delay:0.52s"></i><i class="bar" style="animation-delay:0.65s"></i><i class="bar" style="animation-delay:0.78s"></i><i class="bar" style="animation-delay:0.91s"></i><i class="bar" style="animation-delay:1.04s"></i><i class="bar" style="animation-delay:1.17s"></i><i class="bar" style="animation-delay:1.3s"></i><i class="bar" style="animation-delay:1.43s"></i><i class="bar" style="animation-delay:1.56s"></i><i class="bar" style="animation-delay:1.69s"></i><i class="bar" style="animation-delay:1.82s"></i><i class="bar" style="animation-delay:1.95s"></i><i class="bar" style="animation-delay:2.08s"></i><i class="bar" style="animation-delay:2.21s"></i><i class="bar" style="animation-delay:2.34s"></i><i class="bar" style="animation-delay:2.47s"></i><i class="bar" style="animation-delay:2.6s"></i><i class="bar" style="animation-delay:2.73s"></i><i class="bar" style="animation-delay:2.86s"></i><i class="bar" style="animation-delay:2.99s"></i><i 
+class="bar" style="animation-delay:3.12s"></i><i class="bar" style="animation-delay:3.25s"></i><i class="bar" style="animation-delay:3.38s"></i><i class="bar" style="animation-delay:3.51s"></i></div><div class="btns"><button id="winPrev" type="button">◀◀</button><button id="winPlay" type="button">▶</button><button id="winPause" type="button">▮▮</button><button id="winStop" type="button">■</button><button id="winNext" type="button">▶▶</button><button type="button">EQ</button><button type="button">PL</button></div><div class="playlist" id="winampPlaylist"></div></div></section>
 <section class="section"><div><h2>Игры, которые остались</h2><p>CS 1.6, NFS Underground, Warcraft III, Max Payne, Dead Space 2 — не список игр, а карта вечеров, когда интернет казался больше мира.</p><div class="tags"><span class="tag">CS 1.6</span><span class="tag">NFS</span><span class="tag">Warcraft III</span><span class="tag">Max Payne</span></div></div><div class="gameGrid"><img alt="Max Payne" src="assets/images/capsule2007_08.jpg"/><img alt="NFS Underground" src="assets/images/capsule2007_09.jpg"/><img alt="Warcraft III" src="assets/images/capsule2007_10.jpg"/><img alt="Dead Space 2" src="assets/images/capsule2007_11.jpg"/></div></section>
 <footer class="footer"><span>© Capsule2007 — цифровой архив эпохи</span><span class="online">● ARCHIVE ONLINE</span><span>20 007 ячеек · потом read-only.</span></footer>
 </div>
@@ -153,17 +155,30 @@
   </div>
 </div>
 
-
-
+<!-- New modal for “Моя ячейка” (access your capsule) -->
+<div id="myCellModal" class="actionModal" aria-hidden="true">
+  <div class="actionModalBox myCellBox">
+    <button id="myCellClose" class="actionModalClose" type="button">Закрыть</button>
+    <h3>Моя ячейка</h3>
+    <form class="myCellForm">
+      <label for="myCellNumber">Номер ячейки</label>
+      <input id="myCellNumber" class="reserveInput" maxlength="5" placeholder="00001" />
+      <label for="myCellCode">Код владельца</label>
+      <input id="myCellCode" class="reserveInput" maxlength="11" placeholder="XXXX-XXXX" />
+      <button id="myCellOpenBtn" type="button" class="reserveSubmit">Открыть</button>
+    </form>
+    <pre id="myCellResult" class="myCellResult"></pre>
+  </div>
+</div>
 
 
 
 <div id="bootGate2007" class="bootGate" aria-hidden="false">
   <div class="bootBox">
-    <div class="bootKicker">CAPSULE2007 · SYSTEM BOOT</div>
-    <h2>Нажми, чтобы войти в архив</h2>
+    <div class="bootKicker">WELCOME TO CAPSULE2007</div>
+    <h2>Цифровой архив памяти 2000‑х. Нажми, чтобы включить терминал.</h2>
     <p>Тап/клик запускает звук, QIP и ночной режим терминала.</p>
-    <button id="bootEnter2007" type="button">[ ВКЛЮЧИТЬ СИСТЕМУ ]</button>
+    <button id="bootEnter2007" type="button">[ ENTER ARCHIVE ]</button>
   </div>
 </div>
 <div id="soundUnlock2007">SOUND: TAP / CLICK</div>
