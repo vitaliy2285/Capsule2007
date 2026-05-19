@@ -128,7 +128,7 @@ body.modal-open{overflow:hidden;}
   .clubSection{order:3;}
   .fixedQipSection{order:4;}
   .section{order:5;}
-  #archive{order:90;margin-top:14px;}
+  #archive{order:90;margin-top:6px;}
   .footer{order:100;}
   #archive .cellGrid.cell-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:7px!important;}
   #archive .cellGrid.cell-grid .cell{height:46px!important;font-size:9px!important;border-radius:3px;}
@@ -143,8 +143,9 @@ body.modal-open{overflow:hidden;}
 
 
 @media(max-width:760px){
-  #archive{margin-top:8px!important;scroll-margin-top:8px;}
-  .archive-grid-section{padding-top:10px!important;}
+  #archive{margin-top:2px!important;scroll-margin-top:2px;}
+  .archive-grid-section{padding-top:6px!important;}
+  #archiveGridScrollTarget{scroll-margin-top:58px;}
   .hero{margin-bottom:8px!important;}
   .legendRow{bottom:6px;}
 }
