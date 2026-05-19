@@ -210,11 +210,11 @@ function renderArchiveCells(){
       const notice=document.getElementById('reserveNotice');
       if(selectedArchiveCell===n){
         selectedArchiveCell=null;
-        playCellSound('deselect');
+        playCellSound('deselect',{archiveCell:true});
         if(notice) notice.textContent='';
       }else{
         selectedArchiveCell=n;
-        playCellSound('select');
+        playCellSound('select',{archiveCell:true});
         if(notice) notice.textContent='';
       }
       renderArchiveCells();
@@ -240,7 +240,9 @@ function openReserveOverlay(){
     const archive=document.getElementById('archive');
     archive?.classList.add('cellPickPulse');
     setTimeout(()=>archive?.classList.remove('cellPickPulse'),1600);
-    archive?.scrollIntoView({behavior:'smooth',block:'start'});
+    const gridTarget=document.getElementById('archiveGridScrollTarget') || document.getElementById('cellGrid') || archive;
+    // Mobile scroll target intentionally points to the grid area (not just the archive title).
+    gridTarget?.scrollIntoView({behavior:'smooth',block:'start'});
     return;
   }
 
@@ -293,7 +295,11 @@ if(nextSector) nextSector.addEventListener('click',()=>{currentSector=Math.min(M
 const quickReserveBtn=document.getElementById('quickReserveBtn');
 if(quickReserveBtn) quickReserveBtn.addEventListener('click',()=>{ if(!quickReserveBtn.disabled) openReserveOverlay(); });
 const btnChooseTop=document.getElementById('btnChooseTop');
-if(btnChooseTop) btnChooseTop.addEventListener('click',()=>document.getElementById('archive')?.scrollIntoView({behavior:'smooth',block:'start'}));
+if(btnChooseTop) btnChooseTop.addEventListener('click',()=>{
+  const gridTarget=document.getElementById('archiveGridScrollTarget') || document.getElementById('cellGrid') || document.getElementById('archive');
+  // Mobile scroll target intentionally points to the grid area (not just the archive title).
+  gridTarget?.scrollIntoView({behavior:'smooth',block:'start'});
+});
 document.getElementById('closeReserveOverlay')?.addEventListener('click',closeReserveOverlay);
 document.getElementById('reserveCellBlock')?.addEventListener('click',(e)=>{if(e.target.id==='reserveCellBlock') closeReserveOverlay();});
 window.addEventListener('keydown',(e)=>{if(e.key==='Escape'){closeReserveOverlay();closeActionModal();closeMyCellModal();}});
@@ -582,7 +588,9 @@ qTick();
   bg.loop = true;
   bg.volume = 0.56;
   const icq = new Audio('assets/audio/icq-message.mp3');
-  icq.volume = 0.045;
+  const isMobile = window.matchMedia('(max-width: 760px)').matches;
+  // ICQ notification is intentionally ultra-quiet to avoid distracting mobile playback.
+  icq.volume = isMobile ? 0.015 : 0.025;
   const cellOpen = new Audio('assets/audio/cell-open.mp3');
   cellOpen.volume = 0.78;
   const cellClose = new Audio('assets/audio/cell-close.mp3');
@@ -611,9 +619,11 @@ qTick();
   };
 
   const originalPlayCellSound = (typeof window.playCellSound === 'function') ? window.playCellSound : null;
-  window.playCellSound = function(kind='select'){
+  window.playCellSound = function(kind='select',opts={}){
     const target = kind === 'deselect' ? 'cellClose' : 'cellOpen';
     playManaged(target);
+    // Archive cell clicks suppress generic tick so only drawer open/close is heard.
+    if(opts && opts.archiveCell) return;
     if(!soundUnlocked || !originalPlayCellSound) return;
     try { originalPlayCellSound(kind); } catch(e) {}
   };
