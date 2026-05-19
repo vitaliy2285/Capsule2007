@@ -1,6 +1,12 @@
 -- Foundation archive capsules for first-visit atmosphere
 -- Adds 217 official Capsule2007 published capsules.
 
+alter table if exists public.capsules
+  add column if not exists is_seed boolean not null default false;
+
+alter table if exists public.capsules
+  add column if not exists source text not null default 'user';
+
 with foundation(cell_number, nickname, memory_year, message) as (
 values
   (108, 'Capsule2007', '2003', 'QIP пищал в 2 ночи, а мама думала, что я сплю.'),
@@ -231,7 +237,9 @@ insert into public.capsules (
   paid_at,
   published_at,
   created_at,
-  updated_at
+  updated_at,
+  is_seed,
+  source
 )
 select
   f.cell_number,
@@ -243,7 +251,9 @@ select
   now() - interval '30 days' - (random() * interval '500 days'),
   now() - interval '29 days' - (random() * interval '500 days'),
   now() - interval '30 days' - (random() * interval '500 days'),
-  now() - interval '1 days'
+  now() - interval '1 days',
+  true,
+  'foundation'
 from foundation f
 where not exists (
   select 1

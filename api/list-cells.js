@@ -8,7 +8,7 @@ const handler = async (event) => {
     const start = (sector - 1) * size + 1;
     const end = Math.min(sector * size, 20007);
 
-    const rows = await sb(`/capsules?cell_number=gte.${start}&cell_number=lte.${end}&status=eq.published&select=cell_number,nickname,memory_year,message,status,updated_at&order=cell_number.asc`, {method:'GET'});
+    const rows = await sb(`/capsules?cell_number=gte.${start}&cell_number=lte.${end}&status=eq.published&select=cell_number,nickname,memory_year,message,status,updated_at,is_seed,source&order=cell_number.asc`, {method:'GET'});
     const stats = await sb('/capsules?status=eq.published&select=cell_number', {method:'GET'});
 
     return ok({ sector, start, end, occupied_total: stats.length, free_total: 20007 - stats.length, sector_occupied: rows.length, cells: rows });

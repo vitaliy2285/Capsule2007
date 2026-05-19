@@ -7,7 +7,7 @@ const handler = async (event) => {
     const n = Number(String(raw).replace(/\D/g, ''));
     if(!n || n < 1 || n > 20007) throw new Error('Bad cell number');
 
-    const rows = await sb(`/capsules?cell_number=eq.${n}&status=eq.published&select=cell_number,nickname,memory_year,message,status,published_at&limit=1`, {method:'GET'});
+    const rows = await sb(`/capsules?cell_number=eq.${n}&status=eq.published&select=cell_number,nickname,memory_year,message,status,published_at,is_seed,source&limit=1`, {method:'GET'});
     return ok({cell:rows[0] || null});
   }catch(e){ return fail(e, 400); }
 };

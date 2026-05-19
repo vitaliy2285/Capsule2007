@@ -33,7 +33,7 @@ async function run(){
 Владелец: ${c.nickname||'Аноним'}
 Год: ${c.memory_year||'2007'}
 Текст: ${c.message||''}
-Статус: ${c.status||'published'}
+Статус: ${((c.is_seed===true)||c.source==='foundation') ? 'капсула основания Capsule2007' : ((c.status||'published')==='published' ? 'опубликована' : (c.status||'published'))}
 Постоянный адрес капсулы: ${location.origin}/cell/${String(c.cell_number).padStart(5,'0')}`;
 }
 run();
