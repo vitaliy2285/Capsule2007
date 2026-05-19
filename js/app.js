@@ -564,9 +564,9 @@ qTick();
   bg.loop = true;
   bg.volume = 0.56;
   const icq = new Audio('assets/audio/icq-message.mp3');
-  const isMobile = window.matchMedia('(max-width: 760px)').matches;
-  // ICQ notification: radical attenuation, especially on mobile.
-  icq.volume = isMobile ? 0.003 : 0.01;
+  const isMobileViewport = window.matchMedia('(max-width: 850px)').matches;
+  const isMobileUA = /Mobi|Android|iPhone|iPad|iPod|Windows Phone|Mobile/i.test(navigator.userAgent || '');
+  const isMobileIcq = isMobileViewport || isMobileUA;
   const cellOpen = new Audio('assets/audio/cell-open.mp3');
   cellOpen.volume = 0.78;
   const cellClose = new Audio('assets/audio/cell-close.mp3');
@@ -576,9 +576,27 @@ qTick();
   const SOUND_COOLDOWN_MS = { icq: 1200, cellOpen: 120, cellClose: 120 };
   const lastPlayedAt = new Map();
 
+  function playIcqSound(){
+    if(!soundUnlocked || isMobileIcq) return;
+    const now = Date.now();
+    const minGap = SOUND_COOLDOWN_MS.icq || 0;
+    if(now - (lastPlayedAt.get('icq') || 0) < minGap) return;
+    lastPlayedAt.set('icq', now);
+    try {
+      icq.pause();
+      icq.currentTime = 0;
+      icq.volume = 0.012;
+      icq.play().catch(()=>{});
+    } catch(e) {}
+  }
+
   function playManaged(soundName){
+    if(soundName === 'icq'){
+      playIcqSound();
+      return;
+    }
     if(!soundUnlocked) return;
-    const src = soundName === 'icq' ? icq : (soundName === 'cellClose' ? cellClose : cellOpen);
+    const src = soundName === 'cellClose' ? cellClose : cellOpen;
     const now = Date.now();
     const minGap = SOUND_COOLDOWN_MS[soundName] || 0;
     if(now - (lastPlayedAt.get(soundName) || 0) < minGap) return;
