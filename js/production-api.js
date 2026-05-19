@@ -200,7 +200,7 @@
       }catch(err){
         const raw = String(err.message || err);
         const friendly = (raw.includes('Missing env') || raw.includes('backend_offline') || raw.includes('HTTP 404') || raw.includes('SUPABASE'))
-          ? 'Платёжный backend пока не подключён. Это тестовый стенд: ячейка НЕ занята и в архив не опубликована.'
+          ? 'Платёжная система пока не подключена. Это тестовый режим: ячейка не занята и не опубликована.'
           : ('Ошибка: ' + raw);
         if(notice) notice.textContent = friendly;
         if(preview){

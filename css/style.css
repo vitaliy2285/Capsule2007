@@ -179,3 +179,18 @@ body.modal-open{overflow:hidden;}
 }
 .dealStrip b{color:#bff2ff}
 @media(max-width:760px){.dealStrip{grid-template-columns:1fr;font-size:12px}}
+.footer{display:grid;gap:10px}
+.footerTop{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.footerLinks,.footerLegal{display:flex;gap:14px;flex-wrap:wrap;font-size:13px}
+.footer a{color:#bff2ff;text-decoration:none;border-bottom:1px dotted rgba(191,242,255,.45)}
+.footer a:hover{color:#9cff4f;border-bottom-color:rgba(156,255,79,.6)}
+.dealStrip{grid-template-columns:repeat(2,minmax(0,1fr));}
+.dealLead{font-size:15px;color:#e4f8ff}
+.legalWrap{max-width:960px}
+.legalSection{grid-template-columns:1fr}
+.legalSection p{font-size:17px}
+.legalFooterNav{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+@media(max-width:760px){
+  .footerTop,.footerLinks,.footerLegal,.legalFooterNav{display:grid;gap:8px}
+  .dealStrip{grid-template-columns:1fr}
+}
