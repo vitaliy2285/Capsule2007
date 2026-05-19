@@ -71,19 +71,23 @@
   // Подгрузка реальных занятых ячеек сектора из базы.
   async function loadSectorFromBackend(){
     const label = document.getElementById('sectorLabel')?.textContent || '';
-    const sectorMatch = label.match(/Сектор\s+(\d+)/i);
-    const sector = sectorMatch ? Number(sectorMatch[1]) : 1;
+    const rangeMatch = label.match(/#(\d+)\D+#(\d+)/);
+    const visibleStart = rangeMatch ? Number(rangeMatch[1]) : 1;
+    const sector = Math.max(1, Math.floor((visibleStart - 1) / 500) + 1);
     if(state.lastSectorLoaded === sector) return;
 
     try{
       const data = await apiFetch(`${API.listCells}?sector=${sector}`, {method:'GET'});
+      const cells = Array.isArray(data.cells)
+        ? data.cells
+        : (Array.isArray(data.data) ? data.data : []);
       state.remoteCells.clear();
-      for(const c of data.cells || []){
+      for(const c of cells){
         state.remoteCells.set(Number(c.cell_number), c);
       }
       state.remoteStats = {occupied_total:Number(data.occupied_total||0), free_total:Number(data.free_total||0)};
       window.__capsuleRemoteStats = state.remoteStats;
-      window.__capsuleRemoteTaken = new Set((data.cells||[]).map(c=>Number(c.cell_number)));
+      window.__capsuleRemoteTaken = new Set(cells.map(c=>Number(c.cell_number)));
       state.lastSectorLoaded = sector;
       emit('sector_loaded', {sector, count:state.remoteCells.size});
       if(typeof renderArchiveCells === 'function') renderArchiveCells();
