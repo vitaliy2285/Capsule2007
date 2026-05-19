@@ -29,6 +29,10 @@ create table if not exists public.capsules (
   owner_code_plain_demo text, -- MVP helper. Later replace with encrypted storage / email delivery.
   claim_token text,
 
+
+  is_seed boolean not null default false,
+  source text not null default 'user' check (source in ('user','foundation')),
+
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   expires_at timestamptz,

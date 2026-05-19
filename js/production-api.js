@@ -121,7 +121,7 @@
         const c = data.cell;
         openActionModal(
           'Ячейка #'+pad(c.cell_number),
-          `Статус: ${c.status === 'published' ? 'опубликована' : 'ожидает модерации'}\nВладелец: ${c.nickname || 'Аноним'}\nГод: ${c.memory_year || '2007'}\n\n“${c.message || ''}”\n\nПостоянный адрес капсулы:\n${location.origin}/cell/${pad(c.cell_number)}`
+          `Статус: ${(c.is_seed === true || c.source === 'foundation') ? 'капсула основания Capsule2007' : (c.status === 'published' ? 'опубликована' : 'ожидает модерации')}\nВладелец: ${c.nickname || 'Аноним'}\nГод: ${c.memory_year || '2007'}\n\n“${c.message || ''}”\n\nПостоянный адрес капсулы:\n${location.origin}/cell/${pad(c.cell_number)}`
         );
         return;
       }
