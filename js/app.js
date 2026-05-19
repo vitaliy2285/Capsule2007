@@ -460,16 +460,19 @@ qTick();
   let sector=1;
   let selected=null;
   const special=new Set([7,107,777,1337,2007,7777,11111,12345,16000,20007]);
-  const owners=['Костя','Данил','Лена','Игорь','Макс','Света','Жека','Юля','Вова','Настя','Рома','Ира','Дима','Катя'];
   function size(){return window.matchMedia('(max-width:760px)').matches?MOBILE_SIZE:DESKTOP_SIZE;}
   function pad(n){return String(n).padStart(5,'0');}
-  function taken(n){
-    if(window.capsuleSavedFor && window.capsuleSavedFor(n)) return true;
-    if(special.has(n)) return false;
-    const x=Math.sin(n*12.9898)*43758.5453;
-    return (x-Math.floor(x)) < (2317/TOTAL);
+  function cellRecord(n){
+    if(typeof window.capsuleCellRecord==='function') return window.capsuleCellRecord(n);
+    return null;
   }
-  function owner(n){const s=window.capsuleSavedFor?window.capsuleSavedFor(n):null; return s?s.nickname:owners[Math.abs((n*7+n.toString().charCodeAt(0)))%owners.length];}
+  function taken(n){
+    return !!cellRecord(n);
+  }
+  function owner(n){
+    const r=cellRecord(n);
+    return r ? (r.nickname || 'Аноним') : '';
+  }
   function syncReserve(){
     selectedArchiveCell=selected;
     if(typeof updateReserveState==='function') updateReserveState();
