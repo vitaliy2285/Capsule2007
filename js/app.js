@@ -240,7 +240,7 @@ function openReserveOverlay(){
     const archive=document.getElementById('archive');
     archive?.classList.add('cellPickPulse');
     setTimeout(()=>archive?.classList.remove('cellPickPulse'),1600);
-    archive?.scrollIntoView({behavior:'smooth',block:'center'});
+    archive?.scrollIntoView({behavior:'smooth',block:'start'});
     return;
   }
 
@@ -293,7 +293,7 @@ if(nextSector) nextSector.addEventListener('click',()=>{currentSector=Math.min(M
 const quickReserveBtn=document.getElementById('quickReserveBtn');
 if(quickReserveBtn) quickReserveBtn.addEventListener('click',()=>{ if(!quickReserveBtn.disabled) openReserveOverlay(); });
 const btnChooseTop=document.getElementById('btnChooseTop');
-if(btnChooseTop) btnChooseTop.addEventListener('click',()=>document.getElementById('archive')?.scrollIntoView({behavior:'smooth',block:'center'}));
+if(btnChooseTop) btnChooseTop.addEventListener('click',()=>document.getElementById('archive')?.scrollIntoView({behavior:'smooth',block:'start'}));
 document.getElementById('closeReserveOverlay')?.addEventListener('click',closeReserveOverlay);
 document.getElementById('reserveCellBlock')?.addEventListener('click',(e)=>{if(e.target.id==='reserveCellBlock') closeReserveOverlay();});
 window.addEventListener('keydown',(e)=>{if(e.key==='Escape'){closeReserveOverlay();closeActionModal();closeMyCellModal();}});
@@ -576,57 +576,72 @@ qTick();
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
 })();
 
-/* Synthetic WebAudio music layer disabled: using exact uploaded audio assets only. */
-if (typeof playCellSound === 'function') { playCellSound = function(){}; }
-
 /* Capsule2007 separated assets audio layer: background nostalgia + ICQ + cell drawer */
 (function(){
   const bg = new Audio('assets/audio/bg-nostalgia.mp3');
   bg.loop = true;
-  bg.volume = 0.56; // фоновая музыка: чуть громче, но без перебора
+  bg.volume = 0.56;
   const icq = new Audio('assets/audio/icq-message.mp3');
-  icq.volume = 0.045; // ICQ: очень тихий звук только на готовое входящее сообщение
+  icq.volume = 0.045;
   const cellOpen = new Audio('assets/audio/cell-open.mp3');
-  cellOpen.volume = 0.78; // ячейка: хорошо слышно, но не глушит фон
+  cellOpen.volume = 0.78;
   const cellClose = new Audio('assets/audio/cell-close.mp3');
-  cellClose.volume = 0.72; // отжатие: чуть мягче
+  cellClose.volume = 0.72;
+
   let soundUnlocked = false;
-  function playClone(src){
-    try { const a = src.cloneNode(); a.volume = src.volume; a.play().catch(()=>{}); } catch(e) {}
-  }
-  let lastIcqMessageSoundAt = 0;
-  window.playIcqIncomingMessage = function(){
+  const SOUND_COOLDOWN_MS = { icq: 1200, cellOpen: 120, cellClose: 120 };
+  const lastPlayedAt = new Map();
+
+  function playManaged(soundName){
     if(!soundUnlocked) return;
+    const src = soundName === 'icq' ? icq : (soundName === 'cellClose' ? cellClose : cellOpen);
     const now = Date.now();
-    if(now - lastIcqMessageSoundAt < 1200) return;
-    lastIcqMessageSoundAt = now;
-    playClone(icq);
+    const minGap = SOUND_COOLDOWN_MS[soundName] || 0;
+    if(now - (lastPlayedAt.get(soundName) || 0) < minGap) return;
+    lastPlayedAt.set(soundName, now);
+    try {
+      src.pause();
+      src.currentTime = 0;
+      src.play().catch(()=>{});
+    } catch(e) {}
+  }
+
+  window.playIcqIncomingMessage = function(){
+    playManaged('icq');
   };
+
+  const originalPlayCellSound = (typeof window.playCellSound === 'function') ? window.playCellSound : null;
+  window.playCellSound = function(kind='select'){
+    const target = kind === 'deselect' ? 'cellClose' : 'cellOpen';
+    playManaged(target);
+    if(!soundUnlocked || !originalPlayCellSound) return;
+    try { originalPlayCellSound(kind); } catch(e) {}
+  };
+
   function unlockSound(){
     if(soundUnlocked) return;
     soundUnlocked = true;
+    const ctx = ensureCellAudio();
+    if(ctx && ctx.state === 'suspended') ctx.resume().catch(()=>{});
+    [bg, icq, cellOpen, cellClose].forEach((audio)=>{
+      try {
+        audio.load();
+        audio.pause();
+        audio.currentTime = 0;
+      } catch(e) {}
+    });
     bg.play().catch(()=>{});
     document.getElementById('soundUnlock2007')?.classList.add('hidden');
     const gateEl = document.getElementById('bootGate2007');
     if(gateEl){ gateEl.classList.add('isHidden'); gateEl.setAttribute('aria-hidden','true'); }
     track2007('sound_unlocked');
   }
+
   document.getElementById('bootEnter2007')?.addEventListener('click', unlockSound);
   document.getElementById('bootGate2007')?.addEventListener('click', unlockSound);
   window.addEventListener('pointerdown', unlockSound, {once:true, passive:true});
   window.addEventListener('click', unlockSound, {once:true});
-  // Добавляем клавиши для разблокировки: Enter или пробел
   document.addEventListener('keydown', function(e){
-    if(e.key === 'Enter' || e.key === ' ' || e.code === 'Space'){
-      unlockSound();
-    }
+    if(e.key === 'Enter' || e.key === ' ' || e.code === 'Space') unlockSound();
   });
-  document.addEventListener('click', function(e){
-    const cell = e.target.closest && e.target.closest('.cell');
-    if(!cell) return;
-    if(cell.classList.contains('taken')) return;
-    const wasSelected = cell.classList.contains('selected');
-    setTimeout(()=>playClone(wasSelected ? cellClose : cellOpen), 0);
-  }, true);
-  // ICQ-звук больше НЕ отслеживается через MutationObserver, чтобы не пищать на каждую букву.
 })();
