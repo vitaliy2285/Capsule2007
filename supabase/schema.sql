@@ -40,7 +40,8 @@ create table if not exists public.capsules (
 -- expired/rejected/hidden не блокируют номер.
 create unique index if not exists capsules_active_cell_unique
 on public.capsules(cell_number)
-where status in ('pending_payment','paid_pending_moderation','published');
+where status in ('paid_pending_moderation','published')
+   or (status = 'pending_payment' and (expires_at is null or expires_at > now()));
 
 create index if not exists capsules_cell_number_idx on public.capsules(cell_number);
 create index if not exists capsules_status_idx on public.capsules(status);

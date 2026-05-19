@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Capsule2007 · Ячейка</title><link rel="stylesheet" href="/css/style.css"></head>
+<body class="theme-capsule">
+<main class="container" style="max-width:920px;margin:40px auto;padding:20px;">
+  <section class="archivePanel" style="padding:20px;">
+    <h1 id="title">Ячейка #-----</h1>
+    <pre id="card" style="white-space:pre-wrap;">Загрузка архивной записи...</pre>
+    <p><a href="/">← Вернуться в архив Capsule2007</a></p>
+  </section>
+</main>
+<script>
+function getCellNumber(){
+  const q=new URLSearchParams(location.search);
+  const fromQuery=(q.get('number')||q.get('cell_number')||'').replace(/\D/g,'');
+  const fromPath=(location.pathname.match(/\/cell\/(\d{1,5})/)||[])[1]||'';
+  const raw=(fromQuery||fromPath||'').padStart(5,'0');
+  return raw.slice(-5);
+}
+async function run(){
+  const n=getCellNumber();
+  const title=document.getElementById('title');
+  const card=document.getElementById('card');
+  title.textContent='Ячейка #'+n;
+  const r=await fetch('/api/get-cell?cell_number='+encodeURIComponent(n));
+  const data=await r.json().catch(()=>({}));
+  if(!data.cell){
+    card.textContent='Эта капсула ещё не опубликована или ожидает модерации.';
+    return;
+  }
+  const c=data.cell;
+  card.textContent=`Ячейка #${String(c.cell_number).padStart(5,'0')}
+Владелец: ${c.nickname||'Аноним'}
+Год: ${c.memory_year||'2007'}
+Текст: ${c.message||''}
+Статус: ${c.status||'published'}
+Постоянный адрес капсулы: ${location.origin}/cell/${String(c.cell_number).padStart(5,'0')}`;
+}
+run();
+</script>
+</body></html>

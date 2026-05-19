@@ -23,6 +23,7 @@
 
   const state = {
     remoteCells: new Map(),
+    remoteStats: null,
     lastSectorLoaded: null,
     lastPending: null
   };
@@ -80,6 +81,9 @@
       for(const c of data.cells || []){
         state.remoteCells.set(Number(c.cell_number), c);
       }
+      state.remoteStats = {occupied_total:Number(data.occupied_total||0), free_total:Number(data.free_total||0)};
+      window.__capsuleRemoteStats = state.remoteStats;
+      window.__capsuleRemoteTaken = new Set((data.cells||[]).map(c=>Number(c.cell_number)));
       state.lastSectorLoaded = sector;
       emit('sector_loaded', {sector, count:state.remoteCells.size});
       if(typeof renderArchiveCells === 'function') renderArchiveCells();
@@ -271,7 +275,23 @@
 
   window.addEventListener('load', ()=>{
     setTimeout(loadSectorFromBackend, 600);
+    handlePaymentReturn();
   });
+
+  async function handlePaymentReturn(){
+    const q = new URLSearchParams(location.search);
+    const reservation = q.get('payment_check') || q.get('reservation_id');
+    const claim = q.get('claim') || q.get('claim_token');
+    if(!reservation || !claim) return;
+    try{
+      const data = await apiFetch(API.checkPayment + `?reservation_id=${encodeURIComponent(reservation)}&claim=${encodeURIComponent(claim)}`, {method:'GET'});
+      if(data.paid && data.cell){
+        const c = data.cell;
+        openActionModal('Капсула оплачена и ожидает модерации', `Ячейка: #${pad(c.cell_number)}\nКод владельца: ${c.owner_code}\nСтатус: ${c.status}\nПостоянный адрес: ${location.origin}${c.link}\n\nСохрани код владельца.`);
+      }
+    }catch(e){ console.warn('payment check failed', e.message); }
+  }
+
 
   window.Capsule2007V5 = {loadSectorFromBackend, state};
 })();

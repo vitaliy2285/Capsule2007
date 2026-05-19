@@ -1,11 +1,13 @@
 const TOTAL_CELLS=20007;
 const SECTOR_SIZE=500;
 const START_OCCUPIED=2317;
+window.CAPSULE2007_PRODUCTION = true;
 let currentSector=1;
 let selectedArchiveCell=null;
 
 function occupiedCount2007(){
   // Production baseline. Реальные значения потом приходят из Supabase.
+  if(window.CAPSULE2007_PRODUCTION && window.__capsuleRemoteStats) return Number(window.__capsuleRemoteStats.occupied_total||0);
   return START_OCCUPIED;
 }
 function renderTopCounters2007(){
@@ -73,6 +75,10 @@ window.openOccupiedCell=openOccupiedCell;
 
 function ownerForCell(n){return capsuleOwners[Math.abs((n*7+n.toString().charCodeAt(0)))%capsuleOwners.length]}
 function seededTakenCell(n){
+  if(window.CAPSULE2007_PRODUCTION){
+    const set = window.__capsuleRemoteTaken;
+    return !!(set && set.has(Number(n)));
+  }
   if(specialArchiveCells.has(n)) return false;
   const x=Math.sin(n*12.9898)*43758.5453;
   return (x-Math.floor(x)) < (START_OCCUPIED/TOTAL_CELLS);
