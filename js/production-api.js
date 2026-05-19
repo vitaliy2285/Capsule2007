@@ -13,11 +13,12 @@
   try { localStorage.removeItem('capsule2007_owned_cells'); } catch(e) {}
 
   const API = {
-    createPayment: '/.netlify/functions/create-payment',
-    checkPayment: '/.netlify/functions/check-payment',
-    myCell: '/.netlify/functions/my-cell',
-    listCells: '/.netlify/functions/list-cells',
-    getCell: '/.netlify/functions/get-cell'
+    createPayment: '/api/create-payment',
+    checkPayment: '/api/check-payment',
+    myCell: '/api/my-cell',
+    listCells: '/api/list-cells',
+    getCell: '/api/get-cell',
+    yookassaWebhook: '/api/yookassa-webhook'
   };
 
   const state = {
