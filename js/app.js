@@ -65,6 +65,8 @@ function capsuleCellRecord(n){
   if(taken) return {cell:Number(n), nickname:capsuleOwnerName(n), year:String(2004+(Number(n)%5)), text:capsuleSeedText(n), local:false, status:'published'};
   return null;
 }
+window.capsuleCellRecord = capsuleCellRecord;
+
 function openOccupiedCell(n){
   const r=capsuleCellRecord(n);
   if(!r){return}
@@ -466,13 +468,23 @@ qTick();
     if(typeof window.capsuleCellRecord==='function') return window.capsuleCellRecord(n);
     return null;
   }
+  // ----- ИСПРАВЛЕНИЕ НАЧАЛО -----
+  function isTakenFromRemote(n){
+    return !!(window.CAPSULE2007_PRODUCTION && window.__capsuleRemoteTaken && window.__capsuleRemoteTaken.has(Number(n)));
+  }
   function taken(n){
+    if(isTakenFromRemote(n)) return true;
     return !!cellRecord(n);
   }
   function owner(n){
-    const r=cellRecord(n);
+    if(isTakenFromRemote(n)){
+      const rec = window.capsuleCellRecord(n);
+      return rec ? (rec.nickname || 'Аноним') : 'Аноним';
+    }
+    const r = cellRecord(n);
     return r ? (r.nickname || 'Аноним') : '';
   }
+  // ----- ИСПРАВЛЕНИЕ КОНЕЦ -----
   function syncReserve(){
     selectedArchiveCell=selected;
     if(typeof updateReserveState==='function') updateReserveState();
