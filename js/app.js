@@ -566,7 +566,10 @@ qTick();
   const icq = new Audio('assets/audio/icq-message.mp3');
   const isMobileViewport = window.matchMedia('(max-width: 850px)').matches;
   const isMobileUA = /Mobi|Android|iPhone|iPad|iPod|Windows Phone|Mobile/i.test(navigator.userAgent || '');
-  const isMobileIcq = isMobileViewport || isMobileUA;
+  const isTouchDevice = ('ontouchstart' in window) || ((navigator.maxTouchPoints || 0) > 0) || window.matchMedia('(pointer: coarse)').matches;
+  const isMobileIcq = isMobileViewport || isMobileUA || isTouchDevice;
+  const ICQ_DESKTOP_VOLUME = 0.04;
+  const ICQ_MOBILE_MULTIPLIER = 0.6;
   const cellOpen = new Audio('assets/audio/cell-open.mp3');
   cellOpen.volume = 0.78;
   const cellClose = new Audio('assets/audio/cell-close.mp3');
@@ -585,7 +588,7 @@ qTick();
     try {
       icq.pause();
       icq.currentTime = 0;
-      icq.volume = isMobileIcq ? 0.055 : 0.04;
+      icq.volume = isMobileIcq ? (ICQ_DESKTOP_VOLUME * ICQ_MOBILE_MULTIPLIER) : ICQ_DESKTOP_VOLUME;
       icq.play().catch(()=>{});
     } catch(e) {}
   }
