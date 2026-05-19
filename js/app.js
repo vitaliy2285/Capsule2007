@@ -577,7 +577,7 @@ qTick();
   const lastPlayedAt = new Map();
 
   function playIcqSound(){
-    if(!soundUnlocked || isMobileIcq) return;
+    if(!soundUnlocked) return;
     const now = Date.now();
     const minGap = SOUND_COOLDOWN_MS.icq || 0;
     if(now - (lastPlayedAt.get('icq') || 0) < minGap) return;
@@ -585,7 +585,7 @@ qTick();
     try {
       icq.pause();
       icq.currentTime = 0;
-      icq.volume = 0.012;
+      icq.volume = isMobileIcq ? 0.055 : 0.04;
       icq.play().catch(()=>{});
     } catch(e) {}
   }
