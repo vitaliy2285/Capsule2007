@@ -86,9 +86,10 @@
         ? data.cells
         : (Array.isArray(data.data) ? data.data : []);
       state.remoteCells.clear();
-      for(const c of cells){
+
+      for (const c of cells) {
         const cellNumber = cellNumberOf(c);
-        if(!cellNumber) continue;
+        if (!cellNumber) continue;
         state.remoteCells.set(cellNumber, c);
       }
       state.remoteStats = {occupied_total:Number(data.occupied_total||0), free_total:Number(data.free_total||0)};
