@@ -12,13 +12,15 @@
   // Старые демо-записи localStorage не должны влиять на production-логику.
   try { localStorage.removeItem('capsule2007_owned_cells'); } catch(e) {}
 
+  const API_ORIGIN = 'https://capsule2007.vercel.app';
+
   const API = {
-    createPayment: '/api/create-payment',
-    checkPayment: '/api/check-payment',
-    myCell: '/api/my-cell',
-    listCells: '/api/list-cells',
-    getCell: '/api/get-cell',
-    yookassaWebhook: '/api/yookassa-webhook'
+    createPayment: API_ORIGIN + '/api/create-payment',
+    checkPayment: API_ORIGIN + '/api/check-payment',
+    myCell: API_ORIGIN + '/api/my-cell',
+    listCells: API_ORIGIN + '/api/list-cells',
+    getCell: API_ORIGIN + '/api/get-cell',
+    yookassaWebhook: API_ORIGIN + '/api/yookassa-webhook'
   };
 
   const state = {
