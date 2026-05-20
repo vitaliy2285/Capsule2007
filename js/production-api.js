@@ -110,8 +110,9 @@
       if(!cellNumber) return;
 
       const remote = state.remoteCells.get(cellNumber);
-      const isTaken = !!remote;
       const status = String(remote?.status || '');
+      const isRejected = status === 'rejected';
+      const isTaken = !!remote && !isRejected;
       const isHidden = isTaken && status === 'hidden';
       const isPendingModeration = isTaken && status === 'paid_pending_moderation';
 
@@ -144,7 +145,10 @@
     });
 
     const selectedCell = getSelectedCellNumber();
-    if(selectedCell && state.remoteCells.has(selectedCell)){
+    if(selectedCell){
+      const selectedRemote = state.remoteCells.get(selectedCell);
+      const selectedStatus = String(selectedRemote?.status || '');
+      if(selectedRemote && selectedStatus !== 'rejected'){
       window.selectedArchiveCell = null;
       const selectedNode = document.querySelector('#cellGrid .cell.selected');
       if(selectedNode) selectedNode.classList.remove('selected');
@@ -160,9 +164,65 @@
       }else if(typeof window.updateReserveState === 'function'){
         window.updateReserveState();
       }
+      }
     }
   }
 
+
+
+  function applyReserveStatusForTakenCell(cellNumber, status){
+    const notice = document.getElementById('reserveNotice');
+    const preview = document.getElementById('reservePreview');
+    const submit = document.getElementById('reserveSubmitBtn');
+
+    if(status === 'paid_pending_moderation'){
+      if(notice) notice.textContent = `Ячейка #${pad(cellNumber)} оплачена и ожидает модерации.`;
+      if(preview) preview.textContent = 'Капсула оплачена и отправлена на модерацию.\nПосле одобрения она появится в архиве.\nПовторная покупка этой ячейки невозможна.';
+      if(submit){
+        submit.disabled = true;
+        submit.textContent = 'Ожидает модерации';
+      }
+      return true;
+    }
+
+    if(status === 'hidden'){
+      if(notice) notice.textContent = 'Капсула скрыта администратором.';
+      if(preview) preview.textContent = 'Эта ячейка недоступна для повторной покупки.';
+      if(submit){
+        submit.disabled = true;
+        submit.textContent = 'Недоступно';
+      }
+      return true;
+    }
+
+    if(status === 'published'){
+      if(notice) notice.textContent = 'Капсула опубликована.';
+      if(preview) preview.textContent = 'Эта ячейка уже опубликована и недоступна для повторной покупки.';
+      if(submit){
+        submit.disabled = true;
+        submit.textContent = 'Опубликовано';
+      }
+      return true;
+    }
+
+    return false;
+  }
+
+  const oldUpdateReserveState = window.updateReserveState;
+  if(typeof oldUpdateReserveState === 'function'){
+    window.updateReserveState = function(){
+      oldUpdateReserveState();
+
+      const selectedCell = getSelectedCellNumber();
+      if(!selectedCell) return;
+
+      const remote = state.remoteCells.get(selectedCell);
+      const status = String(remote?.status || '');
+      if(!remote || status === 'rejected') return;
+
+      applyReserveStatusForTakenCell(selectedCell, status);
+    };
+  }
   async function apiFetch(url, options = {}){
     const res = await fetch(url, {
       ...options,
@@ -302,8 +362,10 @@
         document.getElementById('archive')?.scrollIntoView({behavior:'smooth', block:'center'});
         return;
       }
-      if(state.remoteCells.has(cellNumber)){
-        if(notice) notice.textContent = 'Эта ячейка уже занята. Выбери другую.';
+      const selectedRemote = state.remoteCells.get(cellNumber);
+      const selectedStatus = String(selectedRemote?.status || '');
+      if(selectedRemote && selectedStatus !== 'rejected'){
+        applyReserveStatusForTakenCell(cellNumber, selectedStatus);
         applyRemoteCellsToDom();
         return;
       }
@@ -432,7 +494,9 @@
     const n = Number(cell.dataset.cell || cell.dataset.n || 0);
     if(!n) return;
 
-    if(state.remoteCells.has(n)){
+    const remote = state.remoteCells.get(n);
+    const status = String(remote?.status || '');
+    if(remote && status !== 'rejected'){
       e.preventDefault();
       e.stopImmediatePropagation();
       cell.classList.remove('selected');
