@@ -8,8 +8,8 @@ exports.handler = async (event) => {
     const start = (sector - 1) * size + 1;
     const end = Math.min(sector * size, 20007);
 
-    const rows = await sb(`/capsules?cell_number=gte.${start}&cell_number=lte.${end}&status=in.(paid_pending_moderation,published)&select=cell_number,nickname,memory_year,message,status,updated_at,is_seed,source&order=cell_number.asc`, {method:'GET'});
-    const stats = await sb(`/capsules?status=in.(paid_pending_moderation,published)&select=cell_number`, {method:'GET'});
+    const rows = await sb(`/capsules?cell_number=gte.${start}&cell_number=lte.${end}&status=in.(paid_pending_moderation,published,hidden)&select=cell_number,nickname,memory_year,message,status,updated_at,is_seed,source&order=cell_number.asc`, {method:'GET'});
+    const stats = await sb(`/capsules?status=in.(paid_pending_moderation,published,hidden)&select=cell_number`, {method:'GET'});
 
     return ok({
       sector, start, end,

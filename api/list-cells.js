@@ -10,12 +10,12 @@ const handler = async (event) => {
     const end = Math.min(sector * size, 20007);
 
     const rows = await sb(
-      `/capsules?cell_number=gte.${start}&cell_number=lte.${end}&or=(status.eq.published,status.eq.paid_pending_moderation)&select=cell_number,nickname,memory_year,message,status,updated_at,is_seed,source&order=cell_number.asc`,
+      `/capsules?cell_number=gte.${start}&cell_number=lte.${end}&or=(status.eq.published,status.eq.paid_pending_moderation,status.eq.hidden)&select=cell_number,nickname,memory_year,message,status,updated_at,is_seed,source&order=cell_number.asc`,
       {method:'GET'}
     );
 
     const stats = await sb(
-      '/capsules?or=(status.eq.published,status.eq.paid_pending_moderation)&select=cell_number',
+      '/capsules?or=(status.eq.published,status.eq.paid_pending_moderation,status.eq.hidden)&select=cell_number',
       {method:'GET'}
     );
 

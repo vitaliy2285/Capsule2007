@@ -74,13 +74,21 @@
 
       const remote = state.remoteCells.get(cellNumber);
       const isTaken = !!remote;
+      const status = String(remote?.status || '');
+      const isHidden = isTaken && status === 'hidden';
+      const isPendingModeration = isTaken && status === 'paid_pending_moderation';
 
       node.classList.toggle('taken', isTaken);
+      node.classList.toggle('hidden-cell', isHidden);
 
       if(isTaken){
         node.classList.remove('selected');
         const owner = remoteOwnerName(remote);
-        const label = `Ячейка #${pad(cellNumber)} · владелец: ${owner}`;
+        const label = isHidden
+          ? `Ячейка #${pad(cellNumber)} · Скрытая капсула Capsule2007 · владелец: ${owner}`
+          : (isPendingModeration
+            ? `Ячейка #${pad(cellNumber)} · Капсула ожидает модерации · владелец: ${owner}`
+            : `Ячейка #${pad(cellNumber)} · владелец: ${owner}`);
         node.title = label;
         node.setAttribute('aria-label', label);
         node.dataset.id = `Ячейка #${pad(cellNumber)} · ${owner}`;
@@ -88,6 +96,7 @@
         node.setAttribute('aria-disabled', 'true');
       }else{
         if(node.dataset.taken === '1') node.dataset.taken = '0';
+        node.classList.remove('hidden-cell');
         node.removeAttribute('aria-disabled');
       }
     });
@@ -182,7 +191,11 @@
         cell:Number(remote.cell_number),
         nickname:remote.nickname || 'Аноним',
         year:remote.memory_year || '2007',
-        text:remote.message || 'Капсула ожидает публикации.',
+        text:(remote.status === 'published')
+          ? (remote.message || '')
+          : (remote.status === 'hidden'
+            ? 'Скрытая капсула Capsule2007'
+            : 'Капсула ожидает модерации'),
         status:remote.status || 'published',
         local:false
       };
@@ -200,7 +213,15 @@
         const c = data.cell;
         openActionModal(
           'Ячейка #'+pad(c.cell_number),
-          `Статус: ${(c.is_seed === true || c.source === 'foundation') ? 'капсула основания Capsule2007' : (c.status === 'published' ? 'опубликована' : 'ожидает модерации')}\nВладелец: ${c.nickname || 'Аноним'}\nГод: ${c.memory_year || '2007'}\n\n“${c.message || ''}”\n\nПостоянный адрес капсулы:\n${location.origin}/cell/${pad(c.cell_number)}`
+          `Статус: ${(c.is_seed === true || c.source === 'foundation')
+            ? 'капсула основания Capsule2007'
+            : (c.status === 'published'
+              ? 'опубликована'
+              : (c.status === 'hidden' ? 'hidden' : 'ожидает модерации'))}\n`+
+          `Владелец: ${c.nickname || 'Аноним'}\n`+
+          `${c.status === 'published' ? `Год: ${c.memory_year || '2007'}\n\n“${c.message || ''}”\n\nПостоянный адрес капсулы:\n${location.origin}/cell/${pad(c.cell_number)}` : ''}`+
+          `${c.status === 'paid_pending_moderation' ? 'Капсула ожидает модерации.' : ''}`+
+          `${c.status === 'hidden' ? 'Скрытая капсула Capsule2007' : ''}`
         );
         return;
       }
@@ -385,6 +406,14 @@
     setTimeout(loadSectorFromBackend, 600);
     handlePaymentReturn();
   });
+
+  setInterval(() => {
+    if(window.Capsule2007V5){
+      window.Capsule2007V5.state.lastSectorLoaded = null;
+      window.Capsule2007V5.loadSectorFromBackend();
+      window.Capsule2007V5.applyRemoteCellsToDom();
+    }
+  }, 3000);
 
   async function handlePaymentReturn(){
     const q = new URLSearchParams(location.search);
