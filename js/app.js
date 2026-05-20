@@ -646,27 +646,47 @@ qTick();
     try { originalPlayCellSound(kind); } catch(e) {}
   };
 
-  function unlockSound(){
-    if(soundUnlocked) return;
-    soundUnlocked = true;
-    const ctx = ensureCellAudio();
-    if(ctx && ctx.state === 'suspended') ctx.resume().catch(()=>{});
-    [bg, icq, cellOpen, cellClose].forEach((audio)=>{
-      try {
-        audio.load();
-        audio.pause();
-        audio.currentTime = 0;
-      } catch(e) {}
-    });
-    bg.play().catch(()=>{});
+  function hideBootGate(){
     document.getElementById('soundUnlock2007')?.classList.add('hidden');
     const gateEl = document.getElementById('bootGate2007');
-    if(gateEl){ gateEl.classList.add('isHidden'); gateEl.setAttribute('aria-hidden','true'); }
-    track2007('sound_unlocked');
+    if(gateEl){
+      gateEl.classList.add('isHidden');
+      gateEl.setAttribute('aria-hidden','true');
+      gateEl.style.pointerEvents='none';
+    }
   }
 
-  document.getElementById('bootEnter2007')?.addEventListener('click', unlockSound);
-  document.getElementById('bootGate2007')?.addEventListener('click', unlockSound);
+  function unlockSound(){
+    hideBootGate();
+    if(soundUnlocked) return;
+    soundUnlocked = true;
+    try {
+      const ctx = (typeof ensureCellAudio === 'function') ? ensureCellAudio() : null;
+      if(ctx && ctx.state === 'suspended') ctx.resume().catch(()=>{});
+      [bg, icq, cellOpen, cellClose].forEach((audio)=>{
+        try {
+          audio.load();
+          audio.pause();
+          audio.currentTime = 0;
+        } catch(e) {}
+      });
+      bg.play().catch(()=>{});
+      track2007('sound_unlocked');
+    } catch(e) {
+      // Boot gate must still close even if audio unlock fails on specific devices.
+      console.warn('[Capsule2007] unlockSound fallback', e);
+    } finally {
+      hideBootGate();
+    }
+  }
+
+  function onBootEnterClick(){
+    hideBootGate();
+    unlockSound();
+  }
+
+  document.getElementById('bootEnter2007')?.addEventListener('click', onBootEnterClick);
+  document.getElementById('bootGate2007')?.addEventListener('click', onBootEnterClick);
   window.addEventListener('pointerdown', unlockSound, {once:true, passive:true});
   window.addEventListener('click', unlockSound, {once:true});
   document.addEventListener('keydown', function(e){
