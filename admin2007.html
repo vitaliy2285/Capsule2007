@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow,noarchive,noimageindex" />
+  <title>Capsule2007 Admin 2007</title>
+  <style>
+    body{background:#020912;color:#dff8ff;font-family:"Courier New",monospace;padding:20px}
+    input,button{background:#061323;color:#dff8ff;border:1px solid #1d6c95;padding:10px;margin:6px 0;width:100%;max-width:560px}
+    button{cursor:pointer;background:#0a2842;transition:background .2s}
+    button:hover{background:#123a5f}
+    pre{white-space:pre-wrap;border:1px solid #1d6c95;padding:12px;max-width:980px;overflow:auto;background:#030f1e}
+    h1{margin:0 0 4px}
+    .subtitle{color:#52a9d4;margin:0 0 20px;font-size:.9em}
+    .controls{margin-bottom:24px}
+    .grid{display:flex;flex-direction:column;gap:16px;max-width:800px}
+    .card{border:1px solid #1d6c95;background:#041325;padding:16px;border-radius:2px;opacity:1;transform:scale(1);transition:opacity .4s ease,transform .4s ease,border-color .4s ease}
+    .card.fade-out{opacity:0;transform:scale(.95);border-color:#28a745}
+    .card-header{display:flex;justify-content:space-between;border-bottom:1px dashed #1d6c95;padding-bottom:8px;margin-bottom:12px;font-size:.9em;color:#8abed8}
+    .card-body{margin-bottom:16px;line-height:1.4}
+    .card-msg{background:#020912;padding:8px;border-left:3px solid #1d6c95;margin:8px 0;font-family:sans-serif;color:#fff}
+    .card-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .card-actions button{width:auto;margin:0;min-width:100px;padding:6px 12px}
+    .btn-pub{border-color:#28a745;color:#4af073}
+    .btn-rej{border-color:#dc3545;color:#ff6b6b}
+    .btn-hide{border-color:#ffc107;color:#ffd466}
+    .empty-state{color:#52a9d4;font-style:italic}
+  </style>
+</head>
+<body>
+  <h1>Capsule2007 Admin 2007</h1>
+  <div class="subtitle">Проверка и модерация paid_pending_moderation через <code>/api/admin-moderate</code>.</div>
+  <div class="controls">
+    <input id="token" placeholder="ADMIN_TOKEN" type="password" style="display:block" />
+    <button id="btnListPending" style="max-width:200px">list pending</button>
+  </div>
+  <div id="cardsContainer" class="grid"></div>
+  <pre id="out" style="margin-top:20px;display:none"></pre>
+  <script>
+    const tokenInput=document.getElementById('token');
+    const btnListPending=document.getElementById('btnListPending');
+    const container=document.getElementById('cardsContainer');
+    const out=document.getElementById('out');
+    const stored=sessionStorage.getItem('adm_tkn');
+    if(stored) tokenInput.value=stored;
+    tokenInput.addEventListener('input',()=>sessionStorage.setItem('adm_tkn',tokenInput.value));
+    btnListPending.addEventListener('click',loadPending);
+    container.addEventListener('click',async(e)=>{const button=e.target.closest('.card-actions button');if(!button)return;const {action,id}=button.dataset;if(id&&action)await moderate(id,action);});
+    async function loadPending(){container.innerHTML='<div>Загрузка...</div>';out.style.display='none';try{const res=await fetch('/api/admin-moderate',{headers:{'x-admin-token':tokenInput.value}});const data=await res.json().catch(()=>({}));if(!res.ok||data.error){showRaw(data.error?data:{error:'HTTP '+res.status});return;}renderCards(data.pending||[]);}catch(err){container.innerHTML='';out.style.display='block';out.textContent=err.message;}}
+    function renderCards(list){container.innerHTML='';if(!list.length){container.innerHTML='<div class="empty-state">Нет капсул, ожидающих модерации.</div>';return;}list.forEach(item=>{const id=escapeHtml(item.id||'');const card=document.createElement('div');card.className='card';card.id='capsule-'+id;card.innerHTML=`<div class="card-header"><span>Ячейка: <b>#${escapeHtml(item.cell_number)}</b></span><span>Год: ${escapeHtml(item.memory_year)}</span></div><div class="card-body"><div><b>Никнейм:</b> ${escapeHtml(item.nickname||'Аноним')}</div><div><b>ID:</b> <small>${id}</small></div><div><b>Оплачено:</b> ${escapeHtml(formatDate(item.paid_at))}</div><div class="card-msg">${escapeHtml(item.message||'')}</div></div><div class="card-actions"><button class="btn-pub" data-id="${id}" data-action="publish">Publish</button><button class="btn-rej" data-id="${id}" data-action="reject">Reject</button><button class="btn-hide" data-id="${id}" data-action="hide">Hide</button></div>`;container.appendChild(card);});}
+    async function moderate(id,action){const card=document.getElementById('capsule-'+id);if(!card)return;const actionsDiv=card.querySelector('.card-actions');const originalActions=actionsDiv.innerHTML;actionsDiv.innerHTML='<span>Обработка...</span>';try{const res=await fetch('/api/admin-moderate',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':tokenInput.value},body:JSON.stringify({id,action})});const data=await res.json().catch(()=>({}));if(data.ok){card.classList.add('fade-out');actionsDiv.innerHTML='<b>Статус изменен: '+escapeHtml(action)+'</b>';setTimeout(()=>card.remove(),400);}else{alert('Ошибка смены статуса: '+JSON.stringify(data));actionsDiv.innerHTML=originalActions;}}catch(err){alert('Сбой сети при отправке: '+err.message);actionsDiv.innerHTML=originalActions;}}
+    function formatDate(iso){if(!iso)return '—';const d=new Date(iso);return Number.isNaN(d.getTime())?'—':d.toLocaleString('ru-RU');}
+    function showRaw(data){container.innerHTML='';out.style.display='block';out.textContent=JSON.stringify(data,null,2);}
+    function escapeHtml(value){return String(value==null?'':value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
+  </script>
+</body>
+</html>
