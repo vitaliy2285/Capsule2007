@@ -204,6 +204,73 @@ class="bar" style="animation-delay:3.12s"></i><i class="bar" style="animation-de
 <div id="soundUnlock2007">SOUND: TAP / CLICK</div>
 
 
+<script>
+(function(){
+  function hardHideBootGate(){
+    try{ document.body.classList.add('boot-unlocked'); }catch(e){}
+
+    var sound = document.getElementById('soundUnlock2007');
+    if(sound){
+      sound.classList.add('hidden');
+      sound.style.display = 'none';
+      sound.style.opacity = '0';
+      sound.style.visibility = 'hidden';
+      sound.style.pointerEvents = 'none';
+    }
+
+    var gate = document.getElementById('bootGate2007');
+    if(gate){
+      gate.classList.add('isHidden');
+      gate.setAttribute('aria-hidden','true');
+      gate.style.display = 'none';
+      gate.style.opacity = '0';
+      gate.style.visibility = 'hidden';
+      gate.style.pointerEvents = 'none';
+    }
+  }
+
+  function injectBootFallbackCss(){
+    if(document.getElementById('capsule2007BootFallbackCss')) return;
+    var style = document.createElement('style');
+    style.id = 'capsule2007BootFallbackCss';
+    style.textContent =
+      '.bootGate.isHidden,.bootGate[aria-hidden="true"],body.boot-unlocked #bootGate2007{' +
+      'display:none!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important}' +
+      '#soundUnlock2007.hidden,body.boot-unlocked #soundUnlock2007{' +
+      'display:none!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important}';
+    document.head.appendChild(style);
+  }
+
+  function bindBootFallback(){
+    injectBootFallbackCss();
+
+    var btn = document.getElementById('bootEnter2007');
+    var gate = document.getElementById('bootGate2007');
+
+    [btn, gate].forEach(function(el){
+      if(!el) return;
+      el.addEventListener('click', hardHideBootGate, true);
+      el.addEventListener('pointerdown', hardHideBootGate, true);
+      el.addEventListener('touchstart', hardHideBootGate, {capture:true, passive:true});
+    });
+
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' ' || e.code === 'Space'){
+        hardHideBootGate();
+      }
+    }, true);
+
+    window.Capsule2007HardHideBootGate = hardHideBootGate;
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', bindBootFallback);
+  }else{
+    bindBootFallback();
+  }
+})();
+</script>
+
 <script src="js/app.js" defer></script>
 <script src="js/production-api.js" defer></script>
 </body></html>
