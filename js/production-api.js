@@ -27,7 +27,8 @@
     remoteCells: new Map(),
     remoteStats: null,
     lastSectorLoaded: null,
-    lastPending: null
+    lastPending: null,
+    syncRevision: 0
   };
 
   // Полностью отключаем демо-публикацию из localStorage для production/test-стенда.
@@ -65,7 +66,43 @@
     return String(raw?.nickname || raw?.owner_nickname || 'Аноним').trim() || 'Аноним';
   }
 
+  function cacheBustedUrl(url){
+    const sep = url.includes('?') ? '&' : '?';
+    return `${url}${sep}_sync=${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  }
+
+  function installHiddenCellVisualFix(){
+    if(document.getElementById('capsule2007HiddenCellSyncFix')) return;
+    const style = document.createElement('style');
+    style.id = 'capsule2007HiddenCellSyncFix';
+    style.textContent = `
+      #cellGrid .cell.hidden-cell{
+        background:radial-gradient(circle,rgba(156,255,79,.16),rgba(43,126,54,.08) 58%,rgba(2,6,17,.72))!important;
+        color:rgba(220,255,205,.74)!important;
+        border-color:rgba(156,255,79,.30)!important;
+        box-shadow:0 0 10px rgba(156,255,79,.10),inset 0 0 12px rgba(156,255,79,.06)!important;
+        opacity:.82!important;
+        text-indent:0!important;
+      }
+      #cellGrid .cell.hidden-cell::before{
+        content:none!important;
+        display:none!important;
+      }
+      #cellGrid .cell.hidden-cell::after{
+        content:none!important;
+        display:none!important;
+      }
+      #cellGrid .cell.hidden-cell:hover::after{
+        content:attr(data-id)!important;
+        display:block!important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   function applyRemoteCellsToDom(){
+    installHiddenCellVisualFix();
+
     const nodes = document.querySelectorAll('#cellGrid .cell[data-cell], #cellGrid .cell[data-n]');
 
     nodes.forEach((node)=>{
@@ -78,16 +115,18 @@
       const isHidden = isTaken && status === 'hidden';
       const isPendingModeration = isTaken && status === 'paid_pending_moderation';
 
+      node.textContent = pad(cellNumber);
       node.classList.toggle('taken', isTaken);
       node.classList.toggle('hidden-cell', isHidden);
+      node.dataset.status = isTaken ? status : 'free';
 
       if(isTaken){
         node.classList.remove('selected');
         const owner = remoteOwnerName(remote);
         const label = isHidden
-          ? `Ячейка #${pad(cellNumber)} · Скрытая капсула Capsule2007 · владелец: ${owner}`
+          ? `Ячейка #${pad(cellNumber)} · скрытая капсула Capsule2007 · владелец: ${owner}`
           : (isPendingModeration
-            ? `Ячейка #${pad(cellNumber)} · Капсула ожидает модерации · владелец: ${owner}`
+            ? `Ячейка #${pad(cellNumber)} · капсула ожидает модерации · владелец: ${owner}`
             : `Ячейка #${pad(cellNumber)} · владелец: ${owner}`);
         node.title = label;
         node.setAttribute('aria-label', label);
@@ -95,8 +134,11 @@
         node.dataset.taken = '1';
         node.setAttribute('aria-disabled', 'true');
       }else{
-        if(node.dataset.taken === '1') node.dataset.taken = '0';
-        node.classList.remove('hidden-cell');
+        node.dataset.id = `#${pad(cellNumber)} · свободна`;
+        node.title = `Ячейка #${pad(cellNumber)} свободна`;
+        node.setAttribute('aria-label', node.title);
+        node.dataset.taken = '0';
+        node.classList.remove('taken', 'hidden-cell');
         node.removeAttribute('aria-disabled');
       }
     });
@@ -121,10 +163,16 @@
     }
   }
 
-  async function apiFetch(url, options){
+  async function apiFetch(url, options = {}){
     const res = await fetch(url, {
-      headers:{'Content-Type':'application/json'},
-      ...options
+      ...options,
+      cache:'no-store',
+      headers:{
+        'Content-Type':'application/json',
+        'Cache-Control':'no-cache, no-store, max-age=0',
+        'Pragma':'no-cache',
+        ...(options.headers || {})
+      }
     });
     const data = await res.json().catch(()=>({}));
     if(!res.ok || data.error){
@@ -135,15 +183,21 @@
   }
 
   // Подгрузка реальных занятых ячеек сектора из базы.
-  async function loadSectorFromBackend(){
+  async function loadSectorFromBackend(options = {}){
+    const force = !!options.force;
     const label = document.getElementById('sectorLabel')?.textContent || '';
     const rangeMatch = label.match(/#(\d+)\D+#(\d+)/);
     const visibleStart = rangeMatch ? Number(rangeMatch[1]) : 1;
     const sector = Math.max(1, Math.floor((visibleStart - 1) / 500) + 1);
-    if(state.lastSectorLoaded === sector) return;
+    if(!force && state.lastSectorLoaded === sector) return;
+
+    const syncRevision = ++state.syncRevision;
 
     try{
-      const data = await apiFetch(`${API.listCells}?sector=${sector}`, {method:'GET'});
+      const data = await apiFetch(cacheBustedUrl(`${API.listCells}?sector=${sector}`), {method:'GET'});
+
+      if(syncRevision !== state.syncRevision) return;
+
       const cells = Array.isArray(data.cells)
         ? data.cells
         : (Array.isArray(data.data) ? data.data : []);
@@ -194,7 +248,7 @@
         text:(remote.status === 'published')
           ? (remote.message || '')
           : (remote.status === 'hidden'
-            ? 'Скрытая капсула Capsule2007'
+            ? ''
             : 'Капсула ожидает модерации'),
         status:remote.status || 'published',
         local:false
@@ -208,7 +262,7 @@
   window.openOccupiedCell = async function(n){
     emit('cell_occupied_open', {cell_number:n});
     try{
-      const data = await apiFetch(`${API.getCell}?cell=${Number(n)}`, {method:'GET'});
+      const data = await apiFetch(cacheBustedUrl(`${API.getCell}?cell=${Number(n)}`), {method:'GET'});
       if(data.cell){
         const c = data.cell;
         openActionModal(
@@ -217,11 +271,11 @@
             ? 'капсула основания Capsule2007'
             : (c.status === 'published'
               ? 'опубликована'
-              : (c.status === 'hidden' ? 'hidden' : 'ожидает модерации'))}\n`+
+              : (c.status === 'hidden' ? 'скрыта' : 'ожидает модерации'))}\n`+
           `Владелец: ${c.nickname || 'Аноним'}\n`+
           `${c.status === 'published' ? `Год: ${c.memory_year || '2007'}\n\n“${c.message || ''}”\n\nПостоянный адрес капсулы:\n${location.origin}/cell/${pad(c.cell_number)}` : ''}`+
           `${c.status === 'paid_pending_moderation' ? 'Капсула ожидает модерации.' : ''}`+
-          `${c.status === 'hidden' ? 'Скрытая капсула Capsule2007' : ''}`
+          `${c.status === 'hidden' ? 'Текст этой капсулы скрыт.' : ''}`
         );
         return;
       }
@@ -397,21 +451,20 @@
   document.addEventListener('click', function(e){
     if(e.target && (e.target.id === 'prevSector' || e.target.id === 'nextSector')){
       state.lastSectorLoaded = null;
-      setTimeout(loadSectorFromBackend, 250);
+      setTimeout(()=>loadSectorFromBackend({force:true}), 250);
       setTimeout(applyRemoteCellsToDom, 500);
     }
   }, true);
 
   window.addEventListener('load', ()=>{
-    setTimeout(loadSectorFromBackend, 600);
+    installHiddenCellVisualFix();
+    setTimeout(()=>loadSectorFromBackend({force:true}), 600);
     handlePaymentReturn();
   });
 
   setInterval(() => {
     if(window.Capsule2007V5){
-      window.Capsule2007V5.state.lastSectorLoaded = null;
-      window.Capsule2007V5.loadSectorFromBackend();
-      window.Capsule2007V5.applyRemoteCellsToDom();
+      window.Capsule2007V5.loadSectorFromBackend({force:true});
     }
   }, 3000);
 
@@ -421,7 +474,7 @@
     const claim = q.get('claim') || q.get('claim_token');
     if(!reservation || !claim) return;
     try{
-      const data = await apiFetch(API.checkPayment + `?reservation_id=${encodeURIComponent(reservation)}&claim=${encodeURIComponent(claim)}`, {method:'GET'});
+      const data = await apiFetch(cacheBustedUrl(API.checkPayment + `?reservation_id=${encodeURIComponent(reservation)}&claim=${encodeURIComponent(claim)}`), {method:'GET'});
       if(data.paid && data.cell){
         const c = data.cell;
         openActionModal('Капсула оплачена и ожидает модерации', `Ячейка: #${pad(c.cell_number)}\nКод владельца: ${c.owner_code}\nСтатус: ${c.status}\nПостоянный адрес: ${location.origin}${c.link}\n\nСохрани код владельца.`);
