@@ -74,8 +74,10 @@
 
       const remote = state.remoteCells.get(cellNumber);
       const isTaken = !!remote;
+      const isHidden = remote && remote.status === 'hidden';
 
       node.classList.toggle('taken', isTaken);
+      node.classList.toggle('hidden-cell', !!isHidden);
 
       if(isTaken){
         node.classList.remove('selected');
@@ -198,9 +200,17 @@
       const data = await apiFetch(`${API.getCell}?cell=${Number(n)}`, {method:'GET'});
       if(data.cell){
         const c = data.cell;
+        const isHidden = c.status === 'hidden';
+        const isPending = c.status === 'paid_pending_moderation';
+        const statusText = (c.is_seed === true || c.source === 'foundation')
+          ? 'капсула основания Capsule2007'
+          : (isHidden
+            ? 'Скрытая капсула Capsule2007'
+            : (isPending ? 'Ожидает модерации' : (c.status === 'published' ? 'опубликована' : 'ожидает модерации')));
+        const messageBlock = (isHidden || isPending) ? '' : `\n\n“${c.message || ''}”`;
         openActionModal(
           'Ячейка #'+pad(c.cell_number),
-          `Статус: ${(c.is_seed === true || c.source === 'foundation') ? 'капсула основания Capsule2007' : (c.status === 'published' ? 'опубликована' : 'ожидает модерации')}\nВладелец: ${c.nickname || 'Аноним'}\nГод: ${c.memory_year || '2007'}\n\n“${c.message || ''}”\n\nПостоянный адрес капсулы:\n${location.origin}/cell/${pad(c.cell_number)}`
+          `Статус: ${statusText}\nВладелец: ${c.nickname || 'Аноним'}${isHidden ? '' : `\nГод: ${c.memory_year || '2007'}`}${messageBlock}\n\nПостоянный адрес капсулы:\n${location.origin}/cell/${pad(c.cell_number)}`
         );
         return;
       }
@@ -384,6 +394,14 @@
   window.addEventListener('load', ()=>{
     setTimeout(loadSectorFromBackend, 600);
     handlePaymentReturn();
+
+    setInterval(() => {
+      if(window.Capsule2007V5){
+        window.Capsule2007V5.state.lastSectorLoaded = null;
+        window.Capsule2007V5.loadSectorFromBackend();
+        window.Capsule2007V5.applyRemoteCellsToDom();
+      }
+    }, 3000);
   });
 
   async function handlePaymentReturn(){
