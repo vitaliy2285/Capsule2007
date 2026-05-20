@@ -203,3 +203,21 @@ body.modal-open{overflow:hidden;}
   .footerTop,.footerLinks,.footerLegal,.legalFooterNav{display:grid;gap:8px}
   .dealStrip{grid-template-columns:1fr}
 }
+
+.cell.hidden-cell {
+background:
+radial-gradient(circle at center,
+rgba(80,255,160,.18),
+rgba(40,120,70,.12));
+border-color: rgba(120,255,180,.45);
+box-shadow:
+0 0 10px rgba(90,255,170,.18);
+opacity: .72;
+}
+
+.cell.hidden-cell::after {
+content: 'HIDDEN';
+font-size: 9px;
+letter-spacing: .12em;
+color: rgba(180,255,210,.7);
+}
