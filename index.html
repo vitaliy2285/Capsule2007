@@ -11,6 +11,53 @@
 
 
 <link rel="stylesheet" href="css/style.css">
+<style>
+/* === ARCHIVE SEAL COPY PATCH === */
+.archiveSeal{
+  position:relative;
+  padding:20px 22px;
+  border-radius:10px;
+  overflow:hidden;
+  border:1px solid rgba(93,226,255,.18);
+  background:
+    radial-gradient(circle at top left, rgba(93,226,255,.10), transparent 42%),
+    linear-gradient(180deg, rgba(6,18,34,.92), rgba(2,8,18,.96));
+  box-shadow:
+    0 0 24px rgba(93,226,255,.10),
+    inset 0 0 24px rgba(93,226,255,.04);
+  color:rgba(220,244,255,.82);
+  line-height:1.75;
+  letter-spacing:.03em;
+}
+.archiveSeal::before{
+  content:"ARCHIVE LIMIT";
+  display:block;
+  margin-bottom:10px;
+  color:rgba(140,220,255,.42);
+  font:10px "Courier New",monospace;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+}
+.archiveSeal b{
+  display:inline-block;
+  margin-bottom:10px;
+  color:#bdf5ff;
+  font:700 18px "Courier New",monospace;
+  letter-spacing:.14em;
+  text-shadow:
+    0 0 8px rgba(93,226,255,.55),
+    0 0 22px rgba(93,226,255,.22);
+}
+.archiveSeal:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.018) 0, rgba(255,255,255,.018) 1px, transparent 1px, transparent 4px);
+  opacity:.45;
+}
+</style>
 </head><body><div class="wrap">
 <header class="hero">
 <div class="hero-left"><div class="logo">CAPSULE<span>2007</span></div><div class="sub">Выбери ячейку, оставь 160 символов прошлого и закрепи своё место в архиве 2000-х.</div><div class="hero-actions"><button class="iconBtn" type="button" id="btnAbout"><b>ⓘ</b>О проекте</button><button class="iconBtn" type="button" id="btnRules"><b>▤</b>Правила</button><button class="iconBtn" type="button" id="btnLogin"><b>▣</b>Моя ячейка</button><button class="iconBtn" type="button" id="btnChooseTop"><b>▦</b>Выбрать ячейку</button></div></div>
@@ -19,10 +66,10 @@
 </header>
 
 <section class="dealStrip">
-  <div class="dealLead">Это не комментарий.<br/><br/>Это цифровой след твоего 2007 года.</div>
-  <div>После оплаты воспоминание получает:<br/>— постоянный адрес капсулы;<br/>— номер архивной ячейки;<br/>— код владельца;<br/>— место внутри Capsule2007.</div>
-  <div><b>20 007 капсул.</b><br/>Когда последняя ячейка захлопнется, новые записи закроются.<br/>Архив останется в сети на 10 лет в режиме только чтения.</div>
-  <div><b>Важно:</b> до успешной оплаты ячейка не становится занятой.</div>
+  <div class="dealLead">Почему именно 2007?</div>
+  <div>Потому что это был последний момент,<br/>когда интернет ещё ощущался местом,<br/>а не бесконечной лентой.<br/><br/>ICQ/QIP. Winamp. Папка D:\Music.<br/>Компьютерные клубы. CS 1.6.<br/>Пиратские диски. Ночные переписки.<br/>160 символов в SMS.</div>
+  <div>Тогда всё это казалось обычной жизнью.<br/><br/>Теперь это уже цифровая археология.<br/><br/><b>2007 — не просто год.</b><br/>Это точка памяти,<br/>в которой у целого поколения<br/>осталось слишком много жизни.</div>
+  <div class="archiveSeal"><b>20 007 капсул.</b><br/>Когда последняя ячейка захлопнется,<br/>новые записи закроются.<br/>Архив останется в сети на 10 лет в режиме только чтения.</div>
 </section>
 
 <section id="archive" class="cells archive-grid-section">
@@ -161,10 +208,11 @@ class="bar" style="animation-delay:3.12s"></i><i class="bar" style="animation-de
     <a href="contacts.html">Контакты и реквизиты</a>
   </div>
   <div class="footerLegal">
-    <div>Самозанятый: данные будут указаны после завершения подключения платежей</div>
-    <div>ИНН: данные будут указаны после завершения подключения платежей</div>
-    <div>Email: lonelyguy85@yandex.ru</div>
-    <div>Сайт: <a href="https://capsule2007.vercel.app">https://capsule2007.vercel.app</a></div>
+    <div>Этот архив был создан группой студентов-энтузиастов СФ УГНТУ</div>
+    <div>при поддержке тёплых воспоминаний, старого интернета и хорошего настроения.</div>
+    <div>Мы не пытаемся вернуть 2007. Мы просто не хотим, чтобы он исчез бесследно.</div>
+    <div>20 007 капсул. Когда последняя ячейка захлопнется, новые записи закроются.</div>
+    <div>Архив останется в сети на 10 лет в режиме только чтения.</div>
   </div>
 </footer>
 </div>
