@@ -4,55 +4,490 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="robots" content="noindex,nofollow,noarchive,noimageindex" />
-  <title>Capsule2007 Admin 2007</title>
+  <title>Capsule2007 Admin Terminal</title>
   <style>
-    body{background:#020912;color:#dff8ff;font-family:"Courier New",monospace;padding:20px}
-    input,button{background:#061323;color:#dff8ff;border:1px solid #1d6c95;padding:10px;margin:6px 0;width:100%;max-width:560px}
-    button{cursor:pointer;background:#0a2842;transition:background .2s}
-    button:hover{background:#123a5f}
-    pre{white-space:pre-wrap;border:1px solid #1d6c95;padding:12px;max-width:980px;overflow:auto;background:#030f1e}
-    h1{margin:0 0 4px}
-    .subtitle{color:#52a9d4;margin:0 0 20px;font-size:.9em}
-    .controls{margin-bottom:24px}
-    .grid{display:flex;flex-direction:column;gap:16px;max-width:800px}
-    .card{border:1px solid #1d6c95;background:#041325;padding:16px;border-radius:2px;opacity:1;transform:scale(1);transition:opacity .4s ease,transform .4s ease,border-color .4s ease}
-    .card.fade-out{opacity:0;transform:scale(.95);border-color:#28a745}
-    .card-header{display:flex;justify-content:space-between;border-bottom:1px dashed #1d6c95;padding-bottom:8px;margin-bottom:12px;font-size:.9em;color:#8abed8}
-    .card-body{margin-bottom:16px;line-height:1.4}
-    .card-msg{background:#020912;padding:8px;border-left:3px solid #1d6c95;margin:8px 0;font-family:sans-serif;color:#fff}
-    .card-actions{display:flex;gap:8px;flex-wrap:wrap}
-    .card-actions button{width:auto;margin:0;min-width:100px;padding:6px 12px}
-    .btn-pub{border-color:#28a745;color:#4af073}
-    .btn-rej{border-color:#dc3545;color:#ff6b6b}
-    .btn-hide{border-color:#ffc107;color:#ffd466}
-    .empty-state{color:#52a9d4;font-style:italic}
+    :root {
+      --bg: #030710;
+      --panel: #081427;
+      --panel-2: #0c1f36;
+      --line: #1b4869;
+      --neon: #5de2ff;
+      --neon-green: #7dffb3;
+      --text: #dbf6ff;
+      --warn: #ffd56f;
+      --danger: #ff7e97;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #07213f 0, #030710 48%, #01040a 100%);
+      color: var(--text);
+      font-family: "Courier New", monospace;
+      padding: 20px;
+      text-shadow: 0 0 8px rgba(93, 226, 255, .15);
+    }
+
+    body:before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,.03),
+        rgba(255,255,255,.03) 1px,
+        transparent 2px,
+        transparent 4px
+      );
+      mix-blend-mode: soft-light;
+      opacity: .25;
+    }
+
+    .wrap {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, var(--panel), #050e1d);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 18px;
+      box-shadow:
+        0 0 0 1px rgba(93, 226, 255, .09),
+        0 0 22px rgba(50, 170, 255, .15);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      letter-spacing: .05em;
+      color: var(--neon);
+    }
+
+    .subtitle {
+      margin: 0 0 16px;
+      color: #8ecce1;
+      font-size: .9em;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    input,
+    button {
+      font-family: inherit;
+      border: 1px solid var(--line);
+      background: #07162d;
+      color: var(--text);
+      padding: 10px 12px;
+    }
+
+    input {
+      flex: 1;
+      min-width: 240px;
+    }
+
+    button {
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      transition: background .2s, opacity .2s;
+    }
+
+    .primary {
+      background: #103257;
+      border-color: #2784b3;
+      color: #d9f4ff;
+    }
+
+    .primary:hover {
+      background: #15426e;
+    }
+
+    .primary:disabled {
+      background: #061527;
+      color: #527994;
+      cursor: not-allowed;
+      opacity: .75;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 8px;
+      margin: 14px 0 18px;
+    }
+
+    .stat {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      padding: 10px;
+      border-radius: 6px;
+    }
+
+    .stat-label {
+      color: #8ecce1;
+      font-size: 12px;
+    }
+
+    .stat-value {
+      font-size: 22px;
+      color: var(--neon-green);
+      margin-top: 4px;
+    }
+
+    .meta {
+      font-size: 12px;
+      color: #90bfd7;
+      margin-bottom: 8px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #0b1a32, #071328);
+      padding: 14px;
+      border-radius: 8px;
+      opacity: 1;
+      transform: scale(1);
+      transition: opacity .3s ease, transform .3s ease, border-color .3s ease;
+    }
+
+    .card.fade-out {
+      opacity: 0;
+      transform: translateY(-8px) scale(.98);
+      border-color: var(--neon-green);
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      color: #8ecce1;
+      border-bottom: 1px dashed var(--line);
+      padding-bottom: 6px;
+      margin-bottom: 10px;
+    }
+
+    .msg {
+      white-space: pre-wrap;
+      background: #030d1f;
+      padding: 10px;
+      border-left: 3px solid #2672a8;
+      border-radius: 4px;
+      margin: 10px 0;
+      line-height: 1.45;
+      color: #fff;
+      font-family: sans-serif;
+    }
+
+    .line {
+      margin: 4px 0;
+      font-size: 14px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .actions button {
+      padding: 8px 10px;
+      min-width: 88px;
+      font-size: 12px;
+      background: #050e1a;
+    }
+
+    .btn-pub {
+      border-color: #1f9f6a;
+      color: var(--neon-green);
+    }
+
+    .btn-pub:hover {
+      background: #0d3824;
+    }
+
+    .btn-rej {
+      border-color: #c04a64;
+      color: var(--danger);
+    }
+
+    .btn-rej:hover {
+      background: #3d141e;
+    }
+
+    .btn-hide {
+      border-color: #b3892c;
+      color: var(--warn);
+    }
+
+    .btn-hide:hover {
+      background: #3a2b0c;
+    }
+
+    .status {
+      font-size: 12px;
+      color: #8ecce1;
+    }
+
+    .state {
+      padding: 20px;
+      border: 1px dashed var(--line);
+      color: #9fd4eb;
+      background: #061325;
+      border-radius: 8px;
+      text-align: center;
+      font-style: italic;
+    }
+
+    footer {
+      margin-top: 24px;
+      color: #80bbd4;
+      font-size: 12px;
+      text-align: center;
+      line-height: 1.5;
+      border-top: 1px solid rgba(27,72,105,.4);
+      padding-top: 12px;
+    }
   </style>
 </head>
 <body>
-  <h1>Capsule2007 Admin 2007</h1>
-  <div class="subtitle">Проверка и модерация paid_pending_moderation через <code>/api/admin-moderate</code>.</div>
-  <div class="controls">
-    <input id="token" placeholder="ADMIN_TOKEN" type="password" style="display:block" />
-    <button id="btnListPending" style="max-width:200px">list pending</button>
+  <div class="wrap">
+    <section class="panel">
+      <h1>Capsule2007 / Admin Terminal</h1>
+      <p class="subtitle">Модерация paid_pending_moderation через <code>/api/admin-moderate</code>.</p>
+
+      <div class="controls">
+        <input id="token" placeholder="Введите ADMIN TOKEN" type="password" autocomplete="off" />
+        <button id="btnListPending" class="primary">Подключиться</button>
+      </div>
+
+      <div class="stats" id="stats">
+        <div class="stat">
+          <div class="stat-label">pending moderation</div>
+          <div class="stat-value" data-stat="pending">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">published</div>
+          <div class="stat-value" data-stat="published">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">hidden</div>
+          <div class="stat-value" data-stat="hidden">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">rejected</div>
+          <div class="stat-value" data-stat="rejected">0</div>
+        </div>
+      </div>
+
+      <div class="meta" id="refreshMeta">Автообновление: отключено</div>
+
+      <div id="cardsContainer" class="grid">
+        <div class="state">Введите токен и нажмите кнопку для загрузки данных.</div>
+      </div>
+    </section>
+
+    <footer>
+      <div>Группа студентов-энтузиастов СФ УГНТУ</div>
+      <div>Проект не является официальным сервисом УГНТУ.</div>
+    </footer>
   </div>
-  <div id="cardsContainer" class="grid"></div>
-  <pre id="out" style="margin-top:20px;display:none"></pre>
+
   <script>
-    const tokenInput=document.getElementById('token');
-    const btnListPending=document.getElementById('btnListPending');
-    const container=document.getElementById('cardsContainer');
-    const out=document.getElementById('out');
-    const stored=sessionStorage.getItem('adm_tkn');
-    if(stored) tokenInput.value=stored;
-    tokenInput.addEventListener('input',()=>sessionStorage.setItem('adm_tkn',tokenInput.value));
-    btnListPending.addEventListener('click',loadPending);
-    container.addEventListener('click',async(e)=>{const button=e.target.closest('.card-actions button');if(!button)return;const {action,id}=button.dataset;if(id&&action)await moderate(id,action);});
-    async function loadPending(){container.innerHTML='<div>Загрузка...</div>';out.style.display='none';try{const res=await fetch('/api/admin-moderate',{headers:{'x-admin-token':tokenInput.value}});const data=await res.json().catch(()=>({}));if(!res.ok||data.error){showRaw(data.error?data:{error:'HTTP '+res.status});return;}renderCards(data.pending||[]);}catch(err){container.innerHTML='';out.style.display='block';out.textContent=err.message;}}
-    function renderCards(list){container.innerHTML='';if(!list.length){container.innerHTML='<div class="empty-state">Нет капсул, ожидающих модерации.</div>';return;}list.forEach(item=>{const id=escapeHtml(item.id||'');const card=document.createElement('div');card.className='card';card.id='capsule-'+id;card.innerHTML=`<div class="card-header"><span>Ячейка: <b>#${escapeHtml(item.cell_number)}</b></span><span>Год: ${escapeHtml(item.memory_year)}</span></div><div class="card-body"><div><b>Никнейм:</b> ${escapeHtml(item.nickname||'Аноним')}</div><div><b>ID:</b> <small>${id}</small></div><div><b>Оплачено:</b> ${escapeHtml(formatDate(item.paid_at))}</div><div class="card-msg">${escapeHtml(item.message||'')}</div></div><div class="card-actions"><button class="btn-pub" data-id="${id}" data-action="publish">Publish</button><button class="btn-rej" data-id="${id}" data-action="reject">Reject</button><button class="btn-hide" data-id="${id}" data-action="hide">Hide</button></div>`;container.appendChild(card);});}
-    async function moderate(id,action){const card=document.getElementById('capsule-'+id);if(!card)return;const actionsDiv=card.querySelector('.card-actions');const originalActions=actionsDiv.innerHTML;actionsDiv.innerHTML='<span>Обработка...</span>';try{const res=await fetch('/api/admin-moderate',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':tokenInput.value},body:JSON.stringify({id,action})});const data=await res.json().catch(()=>({}));if(data.ok){card.classList.add('fade-out');actionsDiv.innerHTML='<b>Статус изменен: '+escapeHtml(action)+'</b>';setTimeout(()=>card.remove(),400);}else{alert('Ошибка смены статуса: '+JSON.stringify(data));actionsDiv.innerHTML=originalActions;}}catch(err){alert('Сбой сети при отправке: '+err.message);actionsDiv.innerHTML=originalActions;}}
-    function formatDate(iso){if(!iso)return '—';const d=new Date(iso);return Number.isNaN(d.getTime())?'—':d.toLocaleString('ru-RU');}
-    function showRaw(data){container.innerHTML='';out.style.display='block';out.textContent=JSON.stringify(data,null,2);}
-    function escapeHtml(value){return String(value==null?'':value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
+    const tokenInput = document.getElementById('token');
+    const btnListPending = document.getElementById('btnListPending');
+    const container = document.getElementById('cardsContainer');
+    const refreshMeta = document.getElementById('refreshMeta');
+    const statsEls = Object.fromEntries(
+      [...document.querySelectorAll('[data-stat]')].map(el => [el.dataset.stat, el])
+    );
+
+    const stored = sessionStorage.getItem('adm_tkn');
+    if (stored) tokenInput.value = stored;
+
+    tokenInput.addEventListener('input', () => {
+      sessionStorage.setItem('adm_tkn', tokenInput.value.trim());
+    });
+
+    let refreshTimer = null;
+    let busy = false;
+
+    btnListPending.addEventListener('click', () => {
+      loadPending(true);
+      startAutoRefresh();
+    });
+
+    container.addEventListener('click', async (e) => {
+      const button = e.target.closest('.actions button');
+      if (!button || busy) return;
+
+      const { action, id } = button.dataset;
+      if (id && action) {
+        await moderate(id, action, button.closest('.card'));
+      }
+    });
+
+    function startAutoRefresh() {
+      if (refreshTimer) clearInterval(refreshTimer);
+      refreshTimer = setInterval(() => loadPending(false), 10000);
+    }
+
+    function setLoading(isLoading) {
+      busy = isLoading;
+      btnListPending.disabled = isLoading;
+      btnListPending.textContent = isLoading ? 'Синхронизация...' : 'Обновить';
+
+      if (!isLoading) {
+        refreshMeta.textContent =
+          `Автообновление: каждые 10 сек. Последняя синхронизация: ${new Date().toLocaleTimeString('ru-RU')}`;
+      }
+    }
+
+    async function loadPending(showLoading) {
+      const token = tokenInput.value.trim();
+
+      if (!token) {
+        container.innerHTML = '<div class="state">Введите ADMIN TOKEN для доступа.</div>';
+        return;
+      }
+
+      if (showLoading) {
+        container.innerHTML = '<div class="state">Загрузка капсул...</div>';
+      }
+
+      setLoading(true);
+
+      try {
+        const res = await fetch('/api/admin-moderate', {
+          headers: {
+            'x-admin-token': token
+          }
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok || data.error) {
+          throw new Error(data.error || `HTTP ${res.status}`);
+        }
+
+        updateStats(data.stats || {});
+        renderCards(data.pending || []);
+      } catch (err) {
+        container.innerHTML =
+          `<div class="state" style="color:var(--danger)">Ошибка: ${escapeHtml(err.message)}</div>`;
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function updateStats(stats) {
+      statsEls.pending.textContent = Number(stats.pending || 0);
+      statsEls.published.textContent = Number(stats.published || 0);
+      statsEls.hidden.textContent = Number(stats.hidden || 0);
+      statsEls.rejected.textContent = Number(stats.rejected || 0);
+    }
+
+    function renderCards(list) {
+      if (!list.length) {
+        container.innerHTML = '<div class="state">Нет капсул, ожидающих модерации.</div>';
+        return;
+      }
+
+      container.innerHTML = list.map(item => {
+        const id = escapeHtml(item.id || '');
+
+        return `<article class="card" id="capsule-${id}">
+          <div class="card-head">
+            <span>Ячейка: #${escapeHtml(item.cell_number)}</span>
+            <span>Год: ${escapeHtml(item.memory_year)}</span>
+          </div>
+
+          <div class="line"><b>Ник:</b> ${escapeHtml(item.nickname || 'Аноним')}</div>
+          <div class="line"><b>Дата оплаты:</b> ${escapeHtml(formatDate(item.paid_at))}</div>
+          <div class="line"><b>Статус:</b> <span style="color:var(--warn)">${escapeHtml(item.status || 'unknown')}</span></div>
+
+          <div class="msg">${escapeHtml(item.message || '')}</div>
+
+          <div class="actions">
+            <button class="btn-pub" data-id="${id}" data-action="publish">PUBLISH</button>
+            <button class="btn-rej" data-id="${id}" data-action="reject">REJECT</button>
+            <button class="btn-hide" data-id="${id}" data-action="hide">HIDE</button>
+          </div>
+        </article>`;
+      }).join('');
+    }
+
+    async function moderate(id, action, card) {
+      const token = tokenInput.value.trim();
+      if (!token || !card) return;
+
+      const actionBar = card.querySelector('.actions');
+      const old = actionBar.innerHTML;
+      actionBar.innerHTML = '<span class="status">Отправка...</span>';
+
+      try {
+        const res = await fetch('/api/admin-moderate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-token': token
+          },
+          body: JSON.stringify({
+            id,
+            action
+          })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || `HTTP ${res.status}`);
+        }
+
+        card.classList.add('fade-out');
+        setTimeout(() => card.remove(), 300);
+        setTimeout(() => loadPending(false), 350);
+      } catch (err) {
+        actionBar.innerHTML = old;
+        alert('Ошибка модерации: ' + err.message);
+      }
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '—';
+
+      const d = new Date(iso);
+      return Number.isNaN(d.getTime()) ? '—' : d.toLocaleString('ru-RU');
+    }
+
+    function escapeHtml(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
   </script>
 </body>
 </html>
