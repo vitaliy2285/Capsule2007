@@ -34,7 +34,6 @@
   window.capsuleSavedFor = function(){ return null; };
   window.capsuleSavedList = function(){ return []; };
 
-
   function emit(name, payload){
     try {
       window.dataLayer = window.dataLayer || [];
@@ -47,7 +46,7 @@
     if(window.selectedArchiveCell) return Number(window.selectedArchiveCell);
     const picked = document.querySelector('#cellGrid .cell.selected');
     if(picked){
-      const n = Number(picked.dataset.cell || picked.textContent.replace(/\D/g,''));
+      const n = Number(picked.dataset.cell || picked.dataset.n || picked.textContent.replace(/\D/g,''));
       if(n) return n;
     }
     const txt = (document.getElementById('reserveCellInput')?.value || '').replace(/\D/g,'');
@@ -56,9 +55,61 @@
   }
 
   function pad(n){ return String(n).padStart(5,'0'); }
+
   function cellNumberOf(raw){
     const n = Number(raw?.cell_number ?? raw?.cell ?? raw?.number);
     return Number.isFinite(n) ? n : 0;
+  }
+
+  function remoteOwnerName(raw){
+    return String(raw?.nickname || raw?.owner_nickname || 'Аноним').trim() || 'Аноним';
+  }
+
+  function applyRemoteCellsToDom(){
+    const nodes = document.querySelectorAll('#cellGrid .cell[data-cell], #cellGrid .cell[data-n]');
+
+    nodes.forEach((node)=>{
+      const cellNumber = Number(node.dataset.cell || node.dataset.n || 0);
+      if(!cellNumber) return;
+
+      const remote = state.remoteCells.get(cellNumber);
+      const isTaken = !!remote;
+
+      node.classList.toggle('taken', isTaken);
+
+      if(isTaken){
+        node.classList.remove('selected');
+        const owner = remoteOwnerName(remote);
+        const label = `Ячейка #${pad(cellNumber)} · владелец: ${owner}`;
+        node.title = label;
+        node.setAttribute('aria-label', label);
+        node.dataset.id = `Ячейка #${pad(cellNumber)} · ${owner}`;
+        node.dataset.taken = '1';
+        node.setAttribute('aria-disabled', 'true');
+      }else{
+        if(node.dataset.taken === '1') node.dataset.taken = '0';
+        node.removeAttribute('aria-disabled');
+      }
+    });
+
+    const selectedCell = getSelectedCellNumber();
+    if(selectedCell && state.remoteCells.has(selectedCell)){
+      window.selectedArchiveCell = null;
+      const selectedNode = document.querySelector('#cellGrid .cell.selected');
+      if(selectedNode) selectedNode.classList.remove('selected');
+
+      const submit = document.getElementById('reserveSubmitBtn');
+      if(submit){
+        submit.disabled = true;
+        submit.textContent = 'Сначала выбери ячейку';
+      }
+
+      if(typeof window.clearArchiveSelection === 'function'){
+        window.clearArchiveSelection();
+      }else if(typeof window.updateReserveState === 'function'){
+        window.updateReserveState();
+      }
+    }
   }
 
   async function apiFetch(url, options){
@@ -87,6 +138,7 @@
       const cells = Array.isArray(data.cells)
         ? data.cells
         : (Array.isArray(data.data) ? data.data : []);
+
       state.remoteCells.clear();
 
       for (const c of cells) {
@@ -101,16 +153,20 @@
       };
 
       window.__capsuleRemoteStats = state.remoteStats;
-
       window.__capsuleRemoteTaken = new Set(
         cells
           .map(cellNumberOf)
           .filter(Boolean)
       );
+
       state.lastSectorLoaded = sector;
       emit('sector_loaded', {sector, count:state.remoteCells.size});
+
       if(typeof renderArchiveCells === 'function') renderArchiveCells();
+      applyRemoteCellsToDom();
+
       if(typeof window.renderArchiveGridActive === 'function') window.renderArchiveGridActive();
+      applyRemoteCellsToDom();
     }catch(e){
       console.warn('Backend sector load skipped:', e.message);
       // На демо/локально сайт продолжает жить на визуальном фейковом заполнении.
@@ -169,6 +225,11 @@
       if(!cellNumber){
         if(notice) notice.textContent = 'Сначала выбери свободную ячейку в архиве.';
         document.getElementById('archive')?.scrollIntoView({behavior:'smooth', block:'center'});
+        return;
+      }
+      if(state.remoteCells.has(cellNumber)){
+        if(notice) notice.textContent = 'Эта ячейка уже занята. Выбери другую.';
+        applyRemoteCellsToDom();
         return;
       }
       if(message.length < 8){
@@ -288,13 +349,37 @@
     }
   }, true);
 
-  // После переключения сектора пробуем подтянуть backend.
+  // Занятые backend-ячейки открываются только на просмотр и не выбираются повторно.
+  document.addEventListener('click', function(e){
+    const cell = e.target && e.target.closest ? e.target.closest('#cellGrid .cell[data-cell], #cellGrid .cell[data-n]') : null;
+    if(!cell) return;
+
+    const n = Number(cell.dataset.cell || cell.dataset.n || 0);
+    if(!n) return;
+
+    if(state.remoteCells.has(n)){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      cell.classList.remove('selected');
+      window.selectedArchiveCell = null;
+      if(typeof window.clearArchiveSelection === 'function'){
+        window.clearArchiveSelection();
+      }else if(typeof window.updateReserveState === 'function'){
+        window.updateReserveState();
+      }
+      window.openOccupiedCell(n);
+    }
+  }, true);
+
+  // После переключения сектора пробуем подтянуть backend в capture-фазе,
+  // потому что активная сетка в app.js перехватывает кнопки через stopImmediatePropagation().
   document.addEventListener('click', function(e){
     if(e.target && (e.target.id === 'prevSector' || e.target.id === 'nextSector')){
       state.lastSectorLoaded = null;
       setTimeout(loadSectorFromBackend, 250);
+      setTimeout(applyRemoteCellsToDom, 500);
     }
-  });
+  }, true);
 
   window.addEventListener('load', ()=>{
     setTimeout(loadSectorFromBackend, 600);
@@ -315,6 +400,5 @@
     }catch(e){ console.warn('payment check failed', e.message); }
   }
 
-
-  window.Capsule2007V5 = {loadSectorFromBackend, state};
+  window.Capsule2007V5 = { loadSectorFromBackend, state, applyRemoteCellsToDom };
 })();
