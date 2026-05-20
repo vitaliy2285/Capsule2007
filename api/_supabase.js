@@ -21,11 +21,14 @@ async function sb(path, options = {}){
   const key = env('SUPABASE_SERVICE_ROLE_KEY');
   const res = await fetch(url, {
     ...options,
+    cache:'no-store',
     headers:{
       apikey:key,
       Authorization:`Bearer ${key}`,
       'Content-Type':'application/json',
       Prefer:'return=representation',
+      'Cache-Control':'no-cache, no-store, max-age=0',
+      Pragma:'no-cache',
       ...(options.headers || {})
     }
   });
@@ -45,8 +48,13 @@ function ok(body, statusCode=200){
     headers:{
       'Content-Type':'application/json; charset=utf-8',
       'Access-Control-Allow-Origin':'*',
-      'Access-Control-Allow-Headers':'Content-Type',
-      'Access-Control-Allow-Methods':'GET,POST,OPTIONS'
+      'Access-Control-Allow-Headers':'Content-Type, Cache-Control, Pragma',
+      'Access-Control-Allow-Methods':'GET,POST,OPTIONS',
+      'Cache-Control':'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0',
+      'CDN-Cache-Control':'no-store',
+      'Vercel-CDN-Cache-Control':'no-store',
+      Pragma:'no-cache',
+      Expires:'0'
     },
     body:JSON.stringify(body)
   };
