@@ -48,13 +48,13 @@ const handler = async (event) => {
     const ownerCode = randomCode();
     const claimToken = crypto.randomBytes(18).toString('hex');
     const expiresAt = addMinutes(new Date(), 15);
-    const inserted = await sb('/capsules', { method:'POST', body:JSON.stringify([{cell_number:cell,nickname,memory_year:year,message,status:'pending_payment',amount_rub:107,owner_code_hash:hashCode(ownerCode),owner_code_plain_demo:ownerCode,claim_token:claimToken,expires_at:expiresAt}])});
+    const inserted = await sb('/capsules', { method:'POST', body:JSON.stringify([{cell_number:cell,nickname,memory_year:year,message,status:'pending_payment',amount_rub:107,owner_code_hash:hashCode(ownerCode),claim_token:claimToken,expires_at:expiresAt}])});
     const row = inserted[0];
 
     const payment = await createYooKassaPayment({reservationId:row.id, claimToken, cell});
     if(payment.payment_id){ await sb(`/capsules?id=eq.${row.id}`, { method:'PATCH', body:JSON.stringify({payment_id:payment.payment_id}) }); }
 
-    return ok({reservation_id:row.id, claim_token:claimToken, payment_check:row.id, cell_number:cell, status:'pending_payment', expires_at:expiresAt, payment_url:payment.payment_url, demo:payment.demo || false});
+    return ok({reservation_id:row.id, claim_token:claimToken, payment_check:row.id, owner_code:ownerCode, cell_number:cell, status:'pending_payment', expires_at:expiresAt, payment_url:payment.payment_url, demo:payment.demo || false});
   }catch(e){ return fail(e, 400); }
 };
 
