@@ -12,7 +12,6 @@ function buildCell(c){
     memory_year: isPublic ? (c.memory_year || '2007') : null,
     message: isPublic ? (c.message || '') : null,
     status,
-    owner_code: c.owner_code_plain_demo || null,
     link: `/cell/${String(c.cell_number).padStart(5,'0')}`,
     occupied: PAID_STATUSES.includes(status),
     public: isPublic,
@@ -33,7 +32,7 @@ const handler = async (event) => {
 
     if(!reservationId || !claim) throw new Error('reservation_id and claim_token required');
 
-    const rows = await sb(`/capsules?id=eq.${reservationId}&claim_token=eq.${claim}&select=id,cell_number,nickname,memory_year,message,status,owner_code_plain_demo,paid_at,published_at&limit=1`, {method:'GET'});
+    const rows = await sb(`/capsules?id=eq.${reservationId}&claim_token=eq.${claim}&select=id,cell_number,nickname,memory_year,message,status,paid_at,published_at&limit=1`, {method:'GET'});
     if(!rows.length) throw new Error('Reservation not found');
 
     const c = rows[0];

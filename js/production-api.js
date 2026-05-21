@@ -71,6 +71,28 @@
     return `${url}${sep}_sync=${Date.now()}_${Math.random().toString(36).slice(2)}`;
   }
 
+  function ownerCodeStorageKey(reservationId){
+    return `capsule2007_owner_code_${String(reservationId || '')}`;
+  }
+
+  function saveOwnerCode(reservationId, ownerCode){
+    if(!reservationId || !ownerCode) return;
+    const key = ownerCodeStorageKey(reservationId);
+    try { sessionStorage.setItem(key, ownerCode); } catch(e) {}
+    try { localStorage.setItem(key, ownerCode); } catch(e) {}
+  }
+
+  function getOwnerCode(reservationId){
+    if(!reservationId) return '';
+    const key = ownerCodeStorageKey(reservationId);
+    let code = '';
+    try { code = sessionStorage.getItem(key) || ''; } catch(e) {}
+    if(!code){
+      try { code = localStorage.getItem(key) || ''; } catch(e) {}
+    }
+    return String(code || '');
+  }
+
   function installHiddenCellVisualFix(){
     if(document.getElementById('capsule2007HiddenCellSyncFix')) return;
     const style = document.createElement('style');
@@ -399,6 +421,7 @@
         });
 
         state.lastPending = data;
+        saveOwnerCode(data.reservation_id || data.payment_check, data.owner_code);
 
         if(preview){
           preview.textContent =
@@ -541,7 +564,11 @@
       const data = await apiFetch(cacheBustedUrl(API.checkPayment + `?reservation_id=${encodeURIComponent(reservation)}&claim=${encodeURIComponent(claim)}`), {method:'GET'});
       if(data.paid && data.cell){
         const c = data.cell;
-        openActionModal('Капсула оплачена и ожидает модерации', `Ячейка: #${pad(c.cell_number)}\nКод владельца: ${c.owner_code}\nСтатус: ${c.status}\nПостоянный адрес: ${location.origin}${c.link}\n\nСохрани код владельца.`);
+        const ownerCode = getOwnerCode(data.reservation_id || data.payment_check || reservation);
+        const ownerCodeText = ownerCode
+          ? `Код владельца: ${ownerCode}\n`
+          : `Код владельца был показан при создании заявки. Если вы его потеряли, восстановление пока невозможно.\n`;
+        openActionModal('Капсула оплачена и ожидает модерации', `Ячейка: #${pad(c.cell_number)}\n${ownerCodeText}Статус: ${c.status}\nПостоянный адрес: ${location.origin}${c.link}\n\nСохрани код владельца.`);
       }
     }catch(e){ console.warn('payment check failed', e.message); }
   }
