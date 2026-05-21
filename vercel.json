@@ -1,5 +1,16 @@
 {
   "rewrites": [
-    { "source": "/cell/:number", "destination": "/cell.html?number=:number" }
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/cell/:number",
+      "destination": "/cell.html?number=:number"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
   ]
 }
