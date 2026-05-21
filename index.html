@@ -145,7 +145,7 @@
   font-family:"Courier New",monospace!important;
 }
 .footerTop span:last-child{text-align:right!important;}
-.footerLinks{display:flex!important;flex-wrap:wrap!important;gap:10px 16px!important;padding-top:0!important;}
+.footerLinks{display:flex!important;flex-wrap:wrap!important;justify-content:center!important;gap:10px 16px!important;padding-top:0!important;text-align:center!important;}
 .footerLinks a{color:rgba(178,229,244,.72)!important;text-decoration:none!important;border-bottom:1px solid rgba(178,229,244,.22)!important;}
 .footerLinks a:hover{color:#dff8ff!important;text-shadow:0 0 12px rgba(93,226,255,.30)!important;}
 .footerLegal{
@@ -168,8 +168,17 @@
   color:rgba(214,232,241,.76)!important;
   line-height:1.7!important;
   letter-spacing:.015em!important;
-  text-align:justify!important;
-  text-align-last:left!important;
+  text-align:left!important;
+}
+.footerManifest span,
+.footerManifest strong{
+  display:block!important;
+}
+.footerManifest strong{
+  margin-top:6px!important;
+  color:rgba(223,248,255,.84)!important;
+  font-weight:700!important;
+  text-shadow:0 0 10px rgba(93,226,255,.14)!important;
 }
 .footerManifest b{
   color:rgba(223,248,255,.86)!important;
@@ -369,7 +378,7 @@ class="bar" style="animation-delay:3.12s"></i><i class="bar" style="animation-de
     <a href="contacts.html">Контакты и реквизиты</a>
   </div>
   <div class="footerLegal">
-    <div class="footerManifest"><b>Этот архив был создан группой студентов-энтузиастов СФ УГНТУ</b> — при поддержке тёплых воспоминаний, старого интернета и хорошего настроения. Мы не пытаемся вернуть 2007. Мы просто не хотим, чтобы он исчез бесследно.</div>
+    <div class="footerManifest"><span><b>Этот архив был создан группой студентов-энтузиастов СФ УГНТУ</b> — при поддержке тёплых воспоминаний, старого интернета и хорошего настроения.</span><strong>Мы не пытаемся вернуть 2007. Мы просто не хотим, чтобы он исчез бесследно.</strong></div>
     <div class="footerPs"><b>20 007 капсул.</b> Когда последняя ячейка захлопнется, новые записи закроются. Архив останется в сети на 10 лет в режиме только чтения.</div>
   </div>
 </footer>
