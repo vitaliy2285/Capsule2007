@@ -12,7 +12,7 @@
   // Старые демо-записи localStorage не должны влиять на production-логику.
   try { localStorage.removeItem('capsule2007_owned_cells'); } catch(e) {}
 
-  const API_ORIGIN = 'https://capsule2007.vercel.app';
+  const API_ORIGIN = window.location.origin;
 
   const API = {
     createPayment: API_ORIGIN + '/api/create-payment',
