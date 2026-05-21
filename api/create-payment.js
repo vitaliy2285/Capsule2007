@@ -1,11 +1,16 @@
 const crypto = require('crypto');
-const {sb, ok, fail, preflight, randomCode, hashCode} = require('./_supabase');
+const {sb, ok, fail, preflight, hashCode} = require('./_supabase');
 
 const PRICE_VALUE = '107.00';
 
 function cleanMessage(s){ return String(s || '').replace(/\s+/g,' ').trim().slice(0, 160); }
 function cleanName(s){ return String(s || 'Аноним').replace(/[<>]/g,'').trim().slice(0, 24) || 'Аноним'; }
 function addMinutes(date, minutes){ return new Date(date.getTime() + minutes * 60000).toISOString(); }
+function ownerCodeSecret(){ return process.env.OWNER_CODE_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || 'capsule2007-dev-owner-code-secret'; }
+function ownerCodeForReservation(reservationId, claimToken){
+  const digest = crypto.createHmac('sha256', ownerCodeSecret()).update(`${reservationId}:${claimToken}`).digest('hex').toUpperCase();
+  return `${digest.slice(0,6)}-${digest.slice(6,12)}`;
+}
 
 async function createYooKassaPayment({reservationId, claimToken, cell}){
   const shopId = process.env.YOOKASSA_SHOP_ID;
@@ -45,10 +50,11 @@ const handler = async (event) => {
     const existing = await sb(`/capsules?cell_number=eq.${cell}&or=(status.in.(paid_pending_moderation,published,hidden),and(status.eq.pending_payment,expires_at.gt.${encodeURIComponent(nowIso)}))&select=id,status,expires_at&limit=1`, {method:'GET'});
     if(existing.length) throw new Error('Эта ячейка уже занята или временно ожидает оплату');
 
-    const ownerCode = randomCode();
+    const reservationId = crypto.randomUUID();
     const claimToken = crypto.randomBytes(18).toString('hex');
+    const ownerCode = ownerCodeForReservation(reservationId, claimToken);
     const expiresAt = addMinutes(new Date(), 15);
-    const inserted = await sb('/capsules', { method:'POST', body:JSON.stringify([{cell_number:cell,nickname,memory_year:year,message,status:'pending_payment',amount_rub:107,owner_code_hash:hashCode(ownerCode),owner_code_plain_demo:ownerCode,claim_token:claimToken,expires_at:expiresAt}])});
+    const inserted = await sb('/capsules', { method:'POST', body:JSON.stringify([{id:reservationId,cell_number:cell,nickname,memory_year:year,message,status:'pending_payment',amount_rub:107,owner_code_hash:hashCode(ownerCode),claim_token:claimToken,expires_at:expiresAt}])});
     const row = inserted[0];
 
     const payment = await createYooKassaPayment({reservationId:row.id, claimToken, cell});
