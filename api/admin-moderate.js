@@ -7,8 +7,7 @@ const handler = async (event) => {
   try {
     const token =
       event.headers['x-admin-token'] ||
-      event.headers['X-Admin-Token'] ||
-      event.queryStringParameters?.token;
+      event.headers['X-Admin-Token'];
 
     if (token !== env('ADMIN_TOKEN')) {
       throw new Error('Forbidden');
@@ -53,10 +52,14 @@ const handler = async (event) => {
         ? { status: 'published', published_at: new Date().toISOString() }
         : { status: action === 'reject' ? 'rejected' : 'hidden' };
 
-    const rows = await sb(`/capsules?id=eq.${id}`, {
+    const rows = await sb(`/capsules?id=eq.${id}&status=eq.paid_pending_moderation`, {
       method: 'PATCH',
       body: JSON.stringify(patch)
     });
+
+    if (!Array.isArray(rows) || rows.length !== 1) {
+      throw new Error('Capsule is not pending moderation or was already processed');
+    }
 
     return ok({ ok: true, rows });
   } catch (e) {

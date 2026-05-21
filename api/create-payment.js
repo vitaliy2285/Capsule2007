@@ -42,7 +42,7 @@ const handler = async (event) => {
     const nowIso = new Date().toISOString();
     await sb(`/capsules?cell_number=eq.${cell}&status=eq.pending_payment&expires_at=lt.${encodeURIComponent(nowIso)}`, { method:'PATCH', body:JSON.stringify({status:'expired'}) });
 
-    const existing = await sb(`/capsules?cell_number=eq.${cell}&or=(status.in.(paid_pending_moderation,published),and(status.eq.pending_payment,expires_at.gt.${encodeURIComponent(nowIso)}))&select=id,status,expires_at&limit=1`, {method:'GET'});
+    const existing = await sb(`/capsules?cell_number=eq.${cell}&or=(status.in.(paid_pending_moderation,published,hidden),and(status.eq.pending_payment,expires_at.gt.${encodeURIComponent(nowIso)}))&select=id,status,expires_at&limit=1`, {method:'GET'});
     if(existing.length) throw new Error('Эта ячейка уже занята или временно ожидает оплату');
 
     const ownerCode = randomCode();

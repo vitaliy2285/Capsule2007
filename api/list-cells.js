@@ -19,14 +19,26 @@ const handler = async (event) => {
       {method:'GET'}
     );
 
+    const cells = (rows || []).map((row)=>{
+      if(row.status === 'published') return row;
+      return {
+        cell_number: row.cell_number,
+        nickname: row.nickname || 'Аноним',
+        status: row.status,
+        updated_at: row.updated_at || null,
+        occupied: true,
+        public: false
+      };
+    });
+
     return ok({
       sector,
       start,
       end,
       occupied_total: stats.length,
       free_total: 20007 - stats.length,
-      sector_occupied: rows.length,
-      cells: rows
+      sector_occupied: cells.length,
+      cells
     });
   }catch(e){
     return fail(e, 500);
