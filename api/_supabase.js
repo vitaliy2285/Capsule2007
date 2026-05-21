@@ -48,7 +48,7 @@ function ok(body, statusCode=200){
     headers:{
       'Content-Type':'application/json; charset=utf-8',
       'Access-Control-Allow-Origin':'*',
-      'Access-Control-Allow-Headers':'Content-Type, Cache-Control, Pragma',
+      'Access-Control-Allow-Headers':'Content-Type, Cache-Control, Pragma, x-admin-token',
       'Access-Control-Allow-Methods':'GET,POST,OPTIONS',
       'Cache-Control':'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0',
       'CDN-Cache-Control':'no-store',
