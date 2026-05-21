@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<base href="/"/>
+<base href="https://capsule2007.vercel.app/"/>
 <!-- Capsule2007 production preview: images extracted to /assets, JS events included -->
 <title>Capsule2007 — СИЛЬНО</title>
 
@@ -28,3 +28,465 @@
   font-family:"Courier New",Courier,monospace;
   box-sizing:border-box;
 }
+.manifest-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding-bottom:8px;
+  margin-bottom:12px;
+  border-bottom:1px solid rgba(93,226,255,.08);
+}
+.manifest-title{
+  margin:0;
+  color:#dff8ff;
+  font-size:15px;
+  font-weight:bold;
+  letter-spacing:.02em;
+  text-shadow:0 0 8px rgba(93,226,255,.25);
+}
+.manifest-system-status{
+  color:rgba(156,255,79,.55);
+  font-size:10px;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.manifest-content{
+  display:grid;
+  grid-template-columns:1.3fr .7fr;
+  gap:20px;
+  align-items:start;
+}
+.manifest-text-col{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.manifest-prose{
+  margin:0;
+  color:rgba(214,232,241,.82);
+  font-size:12px;
+  line-height:1.42;
+}
+.manifest-highlight{
+  color:#bdf5ff;
+  text-shadow:0 0 6px rgba(93,226,255,.20);
+}
+.manifest-artifacts{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.artifacts-label{
+  color:rgba(93,226,255,.40);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.artifacts-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px 6px;
+}
+.artifacts-tags span{
+  padding:2px 5px;
+  border:1px solid rgba(93,226,255,.08);
+  border-radius:3px;
+  background:rgba(3,17,30,.50);
+  color:rgba(216,245,255,.60);
+  font-size:10px;
+  white-space:nowrap;
+}
+.manifest-seal-col{
+  padding:12px;
+  border:1px solid rgba(93,226,255,.12);
+  border-radius:4px;
+  background:rgba(0,12,22,.40);
+  box-shadow:inset 0 0 12px rgba(93,226,255,.02);
+}
+.seal-counter{
+  margin-bottom:6px;
+  color:#bdf5ff;
+  font-size:15px;
+  font-weight:bold;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  text-shadow:0 0 10px rgba(93,226,255,.40);
+  animation:archivePulse 4s ease-in-out infinite;
+}
+.seal-desc{
+  margin:0;
+  color:rgba(175,215,235,.65);
+  font-size:11px;
+  line-height:1.4;
+}
+@keyframes archivePulse{
+  0%,100%{text-shadow:0 0 8px rgba(93,226,255,.32),0 0 16px rgba(93,226,255,.10)}
+  50%{text-shadow:0 0 12px rgba(93,226,255,.52),0 0 24px rgba(93,226,255,.18)}
+}
+.footer{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:10px!important;
+  padding:15px 18px!important;
+  background:
+    radial-gradient(circle at 50% 0, rgba(93,226,255,.045), transparent 42%),
+    linear-gradient(180deg, rgba(3,14,26,.95), rgba(1,7,14,.98))!important;
+  border-color:rgba(93,226,255,.16)!important;
+  box-shadow:inset 0 0 20px rgba(93,226,255,.035)!important;
+}
+.footerTop{
+  display:grid!important;
+  grid-template-columns:1fr auto 1fr!important;
+  gap:14px!important;
+  align-items:center!important;
+  color:rgba(214,232,241,.74)!important;
+  font-family:"Courier New",monospace!important;
+}
+.footerTop span:last-child{text-align:right!important;}
+.footerLinks{display:flex!important;flex-wrap:wrap!important;justify-content:center!important;gap:10px 16px!important;padding-top:0!important;text-align:center!important;}
+.footerLinks a{color:rgba(178,229,244,.72)!important;text-decoration:none!important;border-bottom:1px solid rgba(178,229,244,.22)!important;}
+.footerLinks a:hover{color:#dff8ff!important;text-shadow:0 0 12px rgba(93,226,255,.30)!important;}
+.footerLegal{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:8px!important;
+  padding:12px 14px!important;
+  border:1px solid rgba(93,226,255,.09)!important;
+  border-radius:6px!important;
+  background:rgba(0,10,18,.30)!important;
+  color:rgba(201,218,226,.66)!important;
+  font:12px/1.55 "Courier New",monospace!important;
+}
+.footerManifest{
+  width:100%!important;
+  display:block!important;
+  padding:0 0 9px 12px!important;
+  border-left:1px solid rgba(93,226,255,.18)!important;
+  border-bottom:1px solid rgba(93,226,255,.08)!important;
+  color:rgba(214,232,241,.76)!important;
+  line-height:1.7!important;
+  letter-spacing:.015em!important;
+  text-align:left!important;
+}
+.footerManifest span,
+.footerManifest strong{
+  display:block!important;
+}
+.footerManifest strong{
+  margin-top:6px!important;
+  color:rgba(223,248,255,.84)!important;
+  font-weight:700!important;
+  text-shadow:0 0 10px rgba(93,226,255,.14)!important;
+}
+.footerManifest b{
+  color:rgba(223,248,255,.86)!important;
+  font-weight:700!important;
+  text-shadow:0 0 10px rgba(93,226,255,.14)!important;
+}
+.footerPs{
+  margin-top:0!important;
+  padding-top:6px!important;
+  color:rgba(175,215,235,.62)!important;
+  font-size:11px!important;
+  line-height:1.5!important;
+}
+.footerPs b{
+  color:rgba(189,245,255,.78)!important;
+  font-weight:700!important;
+  text-shadow:0 0 8px rgba(93,226,255,.18)!important;
+}
+.footerPs:before{
+  content:"P.S.";
+  display:inline-block;
+  margin-right:8px;
+  color:rgba(140,220,255,.42);
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+@media(max-width:768px){
+  .manifest-content{grid-template-columns:1fr;gap:14px;}
+  .capsule-manifest-block{padding:12px 14px;}
+  .manifest-header{display:block;}
+  .manifest-system-status{display:block;margin-top:5px;}
+  .footerTop{grid-template-columns:1fr!important;text-align:left!important;}
+  .footerTop span:last-child{text-align:left!important;}
+  .footerManifest{text-align:left!important;}
+}
+</style>
+</head><body><div class="wrap">
+<header class="hero">
+<div class="hero-left"><div class="logo">CAPSULE<span>2007</span></div><div class="sub">Выбери ячейку, оставь 160 символов прошлого и закрепи своё место в архиве 2000-х.</div><div class="hero-actions"><button class="iconBtn" type="button" id="btnAbout"><b>ⓘ</b>О проекте</button><button class="iconBtn" type="button" id="btnRules"><b>▤</b>Правила</button><button class="iconBtn" type="button" id="btnLogin"><b>▣</b>Моя ячейка</button><button class="iconBtn" type="button" id="btnChooseTop"><b>▦</b>Выбрать ячейку</button></div></div>
+<div class="hero-stat"><div class="hlabel">Всего ячеек</div><div class="hnum" id="statTotal">20007</div><div class="hlabel">Свободно</div><div class="hnum" id="statFree">17690</div><div class="hlabel">Занято</div><div class="hnum" id="statTaken" style="color:#c9d4da;text-shadow:none;letter-spacing:3px">2317</div></div>
+<div class="hero-img"><div class="hero-time">23:58<br/>15/07/2007</div></div>
+</header>
+
+<section class="capsule-manifest-block">
+  <div class="manifest-header">
+    <h2 class="manifest-title">Почему именно 2007?</h2>
+    <span class="manifest-system-status">status: archive_active</span>
+  </div>
+  <div class="manifest-content">
+    <div class="manifest-text-col">
+      <p class="manifest-prose">Потому что это был последний момент, когда интернет ещё ощущался местом, а не бесконечной лентой. Тогда всё это казалось обычной жизнью. Теперь это уже цифровая археология. <span class="manifest-highlight">2007 — не просто год.</span> Это точка памяти, в которой у целого поколения осталось слишком много жизни.</p>
+      <div class="manifest-artifacts">
+        <span class="artifacts-label">Артефакты эпохи:</span>
+        <div class="artifacts-tags"><span>ICQ/QIP</span><span>Winamp</span><span>D:\Music</span><span>Компьютерные клубы</span><span>CS 1.6</span><span>Пиратские диски</span><span>Ночные переписки</span><span>160 символов в SMS</span></div>
+      </div>
+    </div>
+    <div class="manifest-seal-col">
+      <div class="seal-counter">20 007 капсул</div>
+      <p class="seal-desc">Когда последняя ячейка захлопнется, новые записи закроются. Архив останется в сети на 10 лет в режиме только чтения.</p>
+    </div>
+  </div>
+</section>
+
+<section id="archive" class="cells archive-grid-section">
+  <div class="section-head cellsHead">
+    <div>
+      <div class="kicker">archive grid</div>
+      <h2>20 007 ячеек памяти</h2>
+      <p>Занятые светятся. Свободные можно выбрать. Красивые номера подсвечены отдельно.</p>
+    </div>
+    <div class="sector-controls">
+      <button id="prevSector" type="button">←</button>
+      <strong id="sectorLabel">Сектор 01</strong>
+      <button id="nextSector" type="button">→</button>
+    </div>
+  </div>
+  <div class="progress-wrap">
+    <span id="progressText">Занято 2317 из 20007</span>
+    <div><i id="progressBar"></i></div>
+  </div>
+  <div id="archiveGridScrollTarget" aria-hidden="true"></div>
+  <div class="cellGrid cell-grid" id="cellGrid"></div>
+  <div class="legendRow">
+    <div class="legend">
+      <span><i class="free"></i> свободна</span>
+      <span><i class="taken"></i> занята</span>
+      <span><i class="rare"></i> красивый номер</span>
+      <span><i class="mine"></i> выбрана</span>
+    </div>
+    <button id="quickReserveBtn" class="reserveCellBtn" type="button" disabled>Выбери свободную ячейку</button>
+  </div>
+</section>
+
+<section id="reserveCellBlock" class="reservePanel" aria-hidden="true">
+  <div class="reserveOverlayBox">
+    <button id="closeReserveOverlay" class="reserveClose" type="button" aria-label="Закрыть">×</button>
+    <div class="kicker">reserve cell · access protocol</div>
+    <h2>Занять ячейку</h2>
+    <p>Ты занимаешь не комментарий, а место в архиве. После оплаты ячейка получает номер, постоянный адрес капсулы и код владельца. До модерации текст можно поправить; после публикации капсула становится архивной записью.</p>
+    <div class="reserveGrid">
+      <div class="reserveBox reserveHint">
+        <div class="reserveLabel">Выбранная ячейка</div>
+        <input id="reserveCellInput" class="reserveInput" readonly value="Ячейка ещё не выбрана" />
+        <code id="reservePreview">После выбора появятся:
+— номер ячейки;
+— будущий постоянный адрес капсулы;
+— код владельца после оплаты.</code>
+        <div class="reserveNotice" id="reserveNotice"></div>
+      </div>
+      <form id="reserveForm" class="reserveBox">
+        <label class="reserveLabel" for="reserveName">Ник / имя</label>
+        <input id="reserveName" class="reserveInput" maxlength="24" placeholder="Аноним" />
+        <label class="reserveLabel" for="reserveYear" style="margin-top:10px">Год воспоминания</label>
+        <select id="reserveYear" class="reserveSelect"></select>
+        <label class="reserveLabel" for="reserveMemory" style="margin-top:10px">Твоя капсула — до 160 символов</label>
+        <textarea id="reserveMemory" class="reserveTextarea" maxlength="160" placeholder="Ночь. Winamp. ICQ. И завтра в школу."></textarea>
+        <div class="reserveCounter"><span>Лимит старой SMS</span><b><span id="reserveChars">0</span>/160</b></div>
+        <button id="reserveSubmitBtn" class="reserveSubmit" type="submit" disabled>Сначала выбери ячейку</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="section cdrSection fixedSection">
+<div>
+<h2>CD-R / DVD-R / болванки</h2>
+<p>Маркером подписанные диски, сборники “Всё нужное”, драйвера, игры, клипы, обложки из ларька и вечный вопрос: “У тебя Nero есть?”</p>
+<div class="tags"><span class="tag">CD-RW</span><span class="tag">DVD-R</span><span class="tag">Nero</span><span class="tag">700 MB</span></div>
+</div>
+<div class="mediaBox cdrPhotoBox">
+<img alt="CD-RW 700MB шпиндель" src="assets/images/capsule2007_02.jpg"/>
+<div class="cdrText cdrTextOverlay">CD-RW<br/>700MB<br/>52x<br/>“ИГРЫ 2007”</div>
+<div class="cap">болванки / archive media</div>
+</div>
+</section>
+
+<section class="section clubSection fixedSection">
+<div>
+<h2>Компьютерные клубы</h2>
+<p>Не глянцевая реконструкция, а настоящая память: CRT-мониторы, пластиковые наушники, провода под ногами, очередь на de_dust2 и админ за стойкой.</p>
+<div class="tags"><span class="tag">CS 1.6</span><span class="tag">LAN</span><span class="tag">CRT</span><span class="tag">ночные катки</span></div>
+<div class="propCard compactProps">
+<div class="propImgs"><img alt="Jaguar Original" src="assets/images/capsule2007_03.jpg"/><img alt="Molotov cocktail" src="assets/images/capsule2007_04.jpg"/></div>
+<p>Ну вы поняли: кто в теме — тот помнит. Пусть просто лежат здесь, как реквизит той ночи)))</p>
+</div>
+</div>
+<div class="clubTwoOnly">
+<div class="mediaBox clubCard">
+<img alt="Компьютерный клуб ночью" src="assets/images/capsule2007_05.jpg"/>
+<div class="cap">after midnight</div>
+</div>
+<div class="mediaBox clubCard">
+<img alt="Counter-Strike 1.6" src="assets/images/capsule2007_06.jpg"/>
+<div class="cap">Play On Lan</div>
+</div>
+</div>
+</section>
+
+<section class="section qipWrap fixedQipSection">
+<div>
+<h2>ICQ / QIP — живой диалог</h2>
+<p>Ночной общий чат: четыре ника, короткие реплики, паузы и то самое ожидание, когда строка «печатает...» значит больше самого сообщения.</p>
+<div class="tags"><span class="tag">печатает...</span><span class="tag">last seen</span><span class="tag">QIP 2005</span></div>
+</div>
+<div class="qip stableQip">
+<div class="qbar"><span>✿ QIP 2005</span><span>_ □ ×</span></div>
+<div class="qbody">
+<aside class="contacts">
+<b>Онлайн <span>4/17</span></b>
+<div class="contact">Костя</div><div class="contact">Данил</div><div class="contact">Лена</div><div class="contact">Игорь</div>
+<b class="off">Оффлайн <span>13/17</span></b>
+<div class="contact offline">Света</div><div class="contact offline">Макс</div><div class="contact offline">Жека</div><div class="contact offline">Юля</div><div class="contact offline">Вова</div>
+</aside>
+<main class="chat stableChat" id="chat">
+<div class="qchat-log" id="qipMessages"></div>
+<div class="qtyping" id="qipTyping">System: соединение установлено...</div>
+<div class="qinput"></div>
+</main>
+<aside class="qside"><div class="flower">✿</div><b>QIP</b><span>2005</span><input/><button>Найти</button><button>Меню</button></aside>
+</div>
+</div>
+</section>
+<section class="section"><div><h2>Кнопочные телефоны</h2><p>Nokia, Motorola, Siemens — без сенсоров, без GPS, без вайфая. Только звонки, SMS и змейка на пару часов.</p><div class="tags"><span class="tag">NOKIA</span><span class="tag">MOTOROLA</span><span class="tag">SIEMENS</span><span class="tag">SMS</span></div></div><div class="mediaBox"><img alt="popular phones of 2000s" class="phonesImg" src="assets/images/capsule2007_07.jpg"/></div></section>
+<section class="section"><div><h2>Winamp / папка D:\Музыка</h2><p>Теперь плеер живёт: в строке идёт только текущий трек, playlist кликается, кнопки переключают треки, а прогресс можно перематывать.</p><div class="tags"><span class="tag">Winamp 2.95</span><span class="tag">MP3</span><span class="tag">playlist</span><span class="tag">seek bar</span></div></div><div class="winamp winampReal" id="winampBox"><div class="winTop"><span>WINAMP 2.95</span><span id="winampStatus">PLAY</span><span>_ □ ✕</span></div><div class="winMeta"><span id="winampTime">00:00</span><span>128 KBPS</span><span>44 KHZ</span><span>STEREO</span></div><div class="winDisplay"><span id="winampMarquee">♪ Linkin Park - In The End · 128 kbps · stereo</span></div><div class="winSeek" id="winampSeek" title="Перемотка"><i id="winampSeekBar"></i></div><div class="eq" id="winampEq"><i class="bar" style="animation-delay:0.0s"></i><i class="bar" style="animation-delay:0.13s"></i><i class="bar" style="animation-delay:0.26s"></i><i class="bar" 
+style="animation-delay:0.39s"></i><i class="bar" style="animation-delay:0.52s"></i><i class="bar" style="animation-delay:0.65s"></i><i class="bar" style="animation-delay:0.78s"></i><i class="bar" style="animation-delay:0.91s"></i><i class="bar" style="animation-delay:1.04s"></i><i class="bar" style="animation-delay:1.17s"></i><i class="bar" style="animation-delay:1.3s"></i><i class="bar" style="animation-delay:1.43s"></i><i class="bar" style="animation-delay:1.56s"></i><i class="bar" style="animation-delay:1.69s"></i><i class="bar" style="animation-delay:1.82s"></i><i class="bar" style="animation-delay:1.95s"></i><i class="bar" style="animation-delay:2.08s"></i><i class="bar" style="animation-delay:2.21s"></i><i class="bar" style="animation-delay:2.34s"></i><i class="bar" style="animation-delay:2.47s"></i><i class="bar" style="animation-delay:2.6s"></i><i class="bar" style="animation-delay:2.73s"></i><i class="bar" style="animation-delay:2.86s"></i><i class="bar" style="animation-delay:2.99s"></i><i 
+class="bar" style="animation-delay:3.12s"></i><i class="bar" style="animation-delay:3.25s"></i><i class="bar" style="animation-delay:3.38s"></i><i class="bar" style="animation-delay:3.51s"></i></div><div class="btns"><button id="winPrev" type="button">◀◀</button><button id="winPlay" type="button">▶</button><button id="winPause" type="button">▮▮</button><button id="winStop" type="button">■</button><button id="winNext" type="button">▶▶</button><button type="button">EQ</button><button type="button">PL</button></div><div class="playlist" id="winampPlaylist"></div></div></section>
+<section class="section"><div><h2>Игры, которые остались</h2><p>CS 1.6, NFS Underground, Warcraft III, Max Payne, Dead Space 2 — не список игр, а карта вечеров, когда интернет казался больше мира.</p><div class="tags"><span class="tag">CS 1.6</span><span class="tag">NFS</span><span class="tag">Warcraft III</span><span class="tag">Max Payne</span></div></div><div class="gameGrid"><img alt="Max Payne" src="assets/images/capsule2007_08.jpg"/><img alt="NFS Underground" src="assets/images/capsule2007_09.jpg"/><img alt="Warcraft III" src="assets/images/capsule2007_10.jpg"/><img alt="Dead Space 2" src="assets/images/capsule2007_11.jpg"/></div></section>
+<footer class="footer">
+  <div class="footerTop">
+    <span>© Capsule2007 — цифровой архив эпохи</span>
+    <span class="online">● ARCHIVE ONLINE</span>
+    <span>20 007 ячеек · потом read-only.</span>
+  </div>
+  <div class="footerLinks">
+    <a href="offer.html">Оферта</a>
+    <a href="privacy.html">Политика конфиденциальности</a>
+    <a href="contacts.html">Контакты и реквизиты</a>
+  </div>
+  <div class="footerLegal">
+    <div class="footerManifest"><span><b>Этот архив был создан группой студентов-энтузиастов СФ УГНТУ</b> — при поддержке тёплых воспоминаний, старого интернета и хорошего настроения.</span><strong>Мы не пытаемся вернуть 2007. Мы просто не хотим, чтобы он исчез бесследно.</strong></div>
+    <div class="footerPs"><b>20 007 капсул.</b> Когда последняя ячейка захлопнется, новые записи закроются. Архив останется в сети на 10 лет в режиме только чтения.</div>
+  </div>
+</footer>
+</div>
+<div id="actionModal" class="actionModal" aria-hidden="true">
+  <div class="actionModalBox">
+    <h3 id="actionModalTitle" class="actionModalTitle">Capsule2007</h3>
+    <div id="actionModalText" class="actionModalText"></div>
+    <button id="actionModalClose" class="actionModalClose" type="button">Закрыть</button>
+  </div>
+</div>
+
+<!-- New modal for “Моя ячейка” (access your capsule) -->
+<div id="myCellModal" class="actionModal" aria-hidden="true">
+  <div class="actionModalBox myCellBox">
+    <button id="myCellClose" class="actionModalClose" type="button">Закрыть</button>
+    <h3>Моя ячейка</h3>
+    <form class="myCellForm">
+      <label for="myCellNumber">Номер ячейки</label>
+      <input id="myCellNumber" class="reserveInput" maxlength="5" placeholder="00001" />
+      <label for="myCellCode">Код владельца</label>
+      <input id="myCellCode" class="reserveInput" maxlength="11" placeholder="XXXX-XXXX" />
+      <button id="myCellOpenBtn" type="button" class="reserveSubmit">Открыть</button>
+    </form>
+    <pre id="myCellResult" class="myCellResult"></pre>
+  </div>
+</div>
+
+
+
+<div id="bootGate2007" class="bootGate" aria-hidden="false">
+  <div class="bootBox">
+    <div class="bootKicker">WELCOME TO CAPSULE2007</div>
+    <h2>Цифровой архив памяти 2000‑х. Нажми, чтобы включить терминал.</h2>
+    <p>Тап/клик запускает звук, QIP и ночной режим терминала.</p>
+    <button id="bootEnter2007" type="button">[ ENTER ARCHIVE ]</button>
+  </div>
+</div>
+<div id="soundUnlock2007">SOUND: TAP / CLICK</div>
+
+
+<script>
+(function(){
+  function hardHideBootGate(){
+    try{ document.body.classList.add('boot-unlocked'); }catch(e){}
+
+    var sound = document.getElementById('soundUnlock2007');
+    if(sound){
+      sound.classList.add('hidden');
+      sound.style.display = 'none';
+      sound.style.opacity = '0';
+      sound.style.visibility = 'hidden';
+      sound.style.pointerEvents = 'none';
+    }
+
+    var gate = document.getElementById('bootGate2007');
+    if(gate){
+      gate.classList.add('isHidden');
+      gate.setAttribute('aria-hidden','true');
+      gate.style.display = 'none';
+      gate.style.opacity = '0';
+      gate.style.visibility = 'hidden';
+      gate.style.pointerEvents = 'none';
+    }
+  }
+
+  function injectBootFallbackCss(){
+    if(document.getElementById('capsule2007BootFallbackCss')) return;
+    var style = document.createElement('style');
+    style.id = 'capsule2007BootFallbackCss';
+    style.textContent =
+      '.bootGate.isHidden,.bootGate[aria-hidden="true"],body.boot-unlocked #bootGate2007{' +
+      'display:none!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important}' +
+      '#soundUnlock2007.hidden,body.boot-unlocked #soundUnlock2007{' +
+      'display:none!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important}';
+    document.head.appendChild(style);
+  }
+
+  function bindBootFallback(){
+    injectBootFallbackCss();
+
+    var btn = document.getElementById('bootEnter2007');
+    var gate = document.getElementById('bootGate2007');
+
+    [btn, gate].forEach(function(el){
+      if(!el) return;
+      el.addEventListener('click', hardHideBootGate, true);
+      el.addEventListener('pointerdown', hardHideBootGate, true);
+      el.addEventListener('touchstart', hardHideBootGate, {capture:true, passive:true});
+    });
+
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' ' || e.code === 'Space'){
+        hardHideBootGate();
+      }
+    }, true);
+
+    window.Capsule2007HardHideBootGate = hardHideBootGate;
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', bindBootFallback);
+  }else{
+    bindBootFallback();
+  }
+})();
+</script>
+
+<script src="js/app.js" defer></script>
+<script src="js/production-api.js" defer></script>
+</body></html>
