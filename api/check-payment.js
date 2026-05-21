@@ -1,5 +1,26 @@
 const {sb, ok, fail, preflight} = require('./_supabase');
 
+const PAID_STATUSES = ['paid_pending_moderation', 'published', 'hidden'];
+
+function buildCell(c){
+  const status = String(c.status || '');
+  const isPublic = status === 'published';
+
+  return {
+    cell_number: c.cell_number,
+    nickname: c.nickname || 'Аноним',
+    memory_year: isPublic ? (c.memory_year || '2007') : null,
+    message: isPublic ? (c.message || '') : null,
+    status,
+    owner_code: c.owner_code_plain_demo || null,
+    link: `/cell/${String(c.cell_number).padStart(5,'0')}`,
+    occupied: PAID_STATUSES.includes(status),
+    public: isPublic,
+    hidden: status === 'hidden',
+    pending_moderation: status === 'paid_pending_moderation'
+  };
+}
+
 const handler = async (event) => {
   const pf = preflight(event); if(pf) return pf;
   try{
@@ -16,18 +37,12 @@ const handler = async (event) => {
     if(!rows.length) throw new Error('Reservation not found');
 
     const c = rows[0];
+    const paid = PAID_STATUSES.includes(c.status);
+
     return ok({
       status:c.status,
-      paid:['paid_pending_moderation','published'].includes(c.status),
-      cell:c.status === 'pending_payment' ? null : {
-        cell_number:c.cell_number,
-        nickname:c.nickname,
-        memory_year:c.memory_year,
-        message:c.message,
-        status:c.status,
-        owner_code:c.owner_code_plain_demo,
-        link:`/cell/${String(c.cell_number).padStart(5,'0')}`
-      }
+      paid,
+      cell: paid ? buildCell(c) : null
     });
   }catch(e){ return fail(e, 400); }
 };
