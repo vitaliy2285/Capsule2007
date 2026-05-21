@@ -12,120 +12,118 @@
 
 <link rel="stylesheet" href="css/style.css">
 <style>
-/* === CAPSULE2007 MANIFEST PATCH === */
-.why2007Panel{
-  margin-top:10px;
-  padding:24px 26px;
-  border:1px solid rgba(93,226,255,.18);
-  border-radius:8px;
+/* === COMPACT CAPSULE2007 MANIFEST BLOCK === */
+.capsule-manifest-block{
+  margin:12px 0;
+  padding:14px 18px;
+  width:100%;
+  border:1px solid rgba(93,226,255,.15);
+  border-radius:6px;
   background:
-    radial-gradient(circle at 18% 0, rgba(93,226,255,.09), transparent 34%),
-    radial-gradient(circle at 92% 100%, rgba(156,255,79,.045), transparent 32%),
-    linear-gradient(180deg, rgba(3,14,26,.96), rgba(1,8,16,.98));
+    radial-gradient(circle at 0% 0%, rgba(93,226,255,.05), transparent 40%),
+    linear-gradient(180deg,#020b14 0%,#01060d 100%);
   box-shadow:
-    inset 0 0 30px rgba(93,226,255,.045),
-    0 0 26px rgba(0,0,0,.24);
-  font-family:"Courier New",monospace;
+    inset 0 0 15px rgba(93,226,255,.03),
+    0 4px 20px rgba(0,0,0,.30);
+  font-family:"Courier New",Courier,monospace;
+  box-sizing:border-box;
 }
-.why2007Kicker{
-  margin-bottom:10px;
-  color:rgba(156,255,79,.72);
-  font:11px/1.2 "Courier New",monospace;
-  letter-spacing:.22em;
-  text-transform:uppercase;
-  text-shadow:0 0 12px rgba(156,255,79,.25);
+.manifest-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding-bottom:8px;
+  margin-bottom:12px;
+  border-bottom:1px solid rgba(93,226,255,.08);
 }
-.why2007Title{
-  margin:0 0 18px;
+.manifest-title{
+  margin:0;
   color:#dff8ff;
-  font:900 clamp(28px,4.4vw,46px)/1.08 "Courier New",monospace;
+  font-size:15px;
+  font-weight:bold;
   letter-spacing:.02em;
-  text-shadow:0 0 18px rgba(93,226,255,.26);
+  text-shadow:0 0 8px rgba(93,226,255,.25);
 }
-.why2007Intro{
-  max-width:760px;
-  margin:0 0 22px;
-  color:rgba(226,244,252,.90);
-  font:18px/1.72 "Courier New",monospace;
-  letter-spacing:.02em;
-}
-.why2007Grid{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(280px,.72fr);
-  gap:18px;
-  align-items:stretch;
-  margin-top:8px;
-}
-.why2007Text,
-.why2007Artifacts{
-  padding:18px 18px;
-  border:1px solid rgba(93,226,255,.10);
-  border-radius:8px;
-  background:rgba(0,9,18,.34);
-  color:rgba(214,232,241,.84);
-  font:14px/1.78 "Courier New",monospace;
-  letter-spacing:.025em;
-}
-.why2007Text b{
-  color:#bdf5ff;
-  text-shadow:0 0 12px rgba(93,226,255,.28);
-}
-.why2007Artifacts{
-  background:linear-gradient(180deg,rgba(4,18,32,.58),rgba(0,8,17,.40));
-}
-.why2007Artifacts span{
-  display:inline-block;
-  margin:0 8px 8px 0;
-  padding:6px 9px;
-  border:1px solid rgba(93,226,255,.16);
-  border-radius:4px;
-  color:rgba(216,245,255,.82);
-  background:rgba(3,17,30,.58);
+.manifest-system-status{
+  color:rgba(156,255,79,.55);
+  font-size:10px;
+  letter-spacing:.05em;
+  text-transform:uppercase;
   white-space:nowrap;
 }
-.archiveSeal{
-  position:relative;
-  margin-top:18px;
-  padding:20px 22px;
-  border-radius:10px;
-  overflow:hidden;
-  border:1px solid rgba(93,226,255,.20);
-  background:
-    radial-gradient(circle at top left, rgba(93,226,255,.13), transparent 42%),
-    linear-gradient(180deg, rgba(6,18,34,.94), rgba(2,8,18,.96));
-  box-shadow:
-    0 0 30px rgba(93,226,255,.13),
-    inset 0 0 24px rgba(93,226,255,.05);
-  color:rgba(220,244,255,.84);
-  font:14px/1.72 "Courier New",monospace;
-  letter-spacing:.035em;
+.manifest-content{
+  display:grid;
+  grid-template-columns:1.3fr .7fr;
+  gap:20px;
+  align-items:start;
 }
-.archiveSeal::before{
-  content:"ARCHIVE LIMIT";
-  display:block;
-  margin-bottom:10px;
-  color:rgba(140,220,255,.46);
-  font:10px "Courier New",monospace;
-  letter-spacing:.22em;
-  text-transform:uppercase;
+.manifest-text-col{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
 }
-.archiveSeal b{
-  display:inline-block;
-  margin-bottom:8px;
+.manifest-prose{
+  margin:0;
+  color:rgba(214,232,241,.82);
+  font-size:12px;
+  line-height:1.42;
+}
+.manifest-highlight{
   color:#bdf5ff;
-  font:700 19px "Courier New",monospace;
-  letter-spacing:.14em;
-  text-shadow:
-    0 0 8px rgba(93,226,255,.58),
-    0 0 22px rgba(93,226,255,.24);
+  text-shadow:0 0 6px rgba(93,226,255,.20);
 }
-.archiveSeal:after{
-  content:"";
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  background:repeating-linear-gradient(0deg, rgba(255,255,255,.018) 0, rgba(255,255,255,.018) 1px, transparent 1px, transparent 4px);
-  opacity:.45;
+.manifest-artifacts{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.artifacts-label{
+  color:rgba(93,226,255,.40);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.artifacts-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px 6px;
+}
+.artifacts-tags span{
+  padding:2px 5px;
+  border:1px solid rgba(93,226,255,.08);
+  border-radius:3px;
+  background:rgba(3,17,30,.50);
+  color:rgba(216,245,255,.60);
+  font-size:10px;
+  white-space:nowrap;
+}
+.manifest-seal-col{
+  padding:12px;
+  border:1px solid rgba(93,226,255,.12);
+  border-radius:4px;
+  background:rgba(0,12,22,.40);
+  box-shadow:inset 0 0 12px rgba(93,226,255,.02);
+}
+.seal-counter{
+  margin-bottom:6px;
+  color:#bdf5ff;
+  font-size:15px;
+  font-weight:bold;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  text-shadow:0 0 10px rgba(93,226,255,.40);
+  animation:archivePulse 4s ease-in-out infinite;
+}
+.seal-desc{
+  margin:0;
+  color:rgba(175,215,235,.65);
+  font-size:11px;
+  line-height:1.4;
+}
+@keyframes archivePulse{
+  0%,100%{text-shadow:0 0 8px rgba(93,226,255,.32),0 0 16px rgba(93,226,255,.10)}
+  50%{text-shadow:0 0 12px rgba(93,226,255,.52),0 0 24px rgba(93,226,255,.18)}
 }
 .footer{
   display:grid!important;
@@ -162,11 +160,11 @@
 }
 .footerLegal div:nth-child(3){color:rgba(223,248,255,.88)!important;text-shadow:0 0 14px rgba(93,226,255,.16)!important;}
 .footerLegal div:nth-child(4),.footerLegal div:nth-child(5){color:rgba(156,255,79,.70)!important;}
-@media(max-width:760px){
-  .why2007Panel{padding:18px 16px;}
-  .why2007Title{font-size:30px;}
-  .why2007Intro{font-size:15px;}
-  .why2007Grid{grid-template-columns:1fr;}
+@media(max-width:768px){
+  .manifest-content{grid-template-columns:1fr;gap:14px;}
+  .capsule-manifest-block{padding:12px 14px;}
+  .manifest-header{display:block;}
+  .manifest-system-status{display:block;margin-top:5px;}
   .footerTop{grid-template-columns:1fr!important;text-align:left!important;}
   .footerTop span:last-child{text-align:left!important;}
 }
@@ -178,15 +176,24 @@
 <div class="hero-img"><div class="hero-time">23:58<br/>15/07/2007</div></div>
 </header>
 
-<section class="why2007Panel">
-  <div class="why2007Kicker">последний год старого интернета</div>
-  <h2 class="why2007Title">Почему именно 2007?</h2>
-  <p class="why2007Intro">Потому что это был последний момент, когда интернет ещё ощущался местом, а не бесконечной лентой.</p>
-  <div class="why2007Grid">
-    <div class="why2007Text">Тогда всё это казалось обычной жизнью.<br/><br/>Теперь это уже цифровая археология.<br/><br/><b>2007 — не просто год.</b><br/>Это точка памяти, в которой у целого поколения осталось слишком много жизни.</div>
-    <div class="why2007Artifacts"><span>ICQ/QIP</span><span>Winamp</span><span>D:\Music</span><span>Компьютерные клубы</span><span>CS 1.6</span><span>Пиратские диски</span><span>Ночные переписки</span><span>160 символов в SMS</span></div>
+<section class="capsule-manifest-block">
+  <div class="manifest-header">
+    <h2 class="manifest-title">Почему именно 2007?</h2>
+    <span class="manifest-system-status">status: archive_active</span>
   </div>
-  <div class="archiveSeal"><b>20 007 капсул.</b><br/>Когда последняя ячейка захлопнется,<br/>новые записи закроются.<br/>Архив останется в сети на 10 лет в режиме только чтения.</div>
+  <div class="manifest-content">
+    <div class="manifest-text-col">
+      <p class="manifest-prose">Потому что это был последний момент, когда интернет ещё ощущался местом, а не бесконечной лентой. Тогда всё это казалось обычной жизнью. Теперь это уже цифровая археология. <span class="manifest-highlight">2007 — не просто год.</span> Это точка памяти, в которой у целого поколения осталось слишком много жизни.</p>
+      <div class="manifest-artifacts">
+        <span class="artifacts-label">Артефакты эпохи:</span>
+        <div class="artifacts-tags"><span>ICQ/QIP</span><span>Winamp</span><span>D:\Music</span><span>Компьютерные клубы</span><span>CS 1.6</span><span>Пиратские диски</span><span>Ночные переписки</span><span>160 символов в SMS</span></div>
+      </div>
+    </div>
+    <div class="manifest-seal-col">
+      <div class="seal-counter">20 007 капсул</div>
+      <p class="seal-desc">Когда последняя ячейка захлопнется, новые записи закроются. Архив останется в сети на 10 лет в режиме только чтения.</p>
+    </div>
+  </div>
 </section>
 
 <section id="archive" class="cells archive-grid-section">
