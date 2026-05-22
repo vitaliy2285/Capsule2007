@@ -1,11 +1,23 @@
 const {sb, ok, fail, preflight, env} = require('./_supabase');
 
+const TOTAL_CELLS = 20007;
+const START_OCCUPIED_FALLBACK = 2317;
+const SUPABASE_TIMEOUT_MS = 2200;
+
+function withTimeout(promise, ms, label){
+  let timer;
+  const timeout = new Promise((_, reject)=>{
+    timer = setTimeout(()=>reject(new Error(label || 'timeout')), ms);
+  });
+  return Promise.race([promise, timeout]).finally(()=>clearTimeout(timer));
+}
+
 async function countOccupiedCapsules(){
   const url = env('SUPABASE_URL').replace(/\/$/,'') +
     '/rest/v1/capsules?or=(status.eq.published,status.eq.paid_pending_moderation,status.eq.hidden)&select=cell_number';
   const key = env('SUPABASE_SERVICE_ROLE_KEY');
 
-  const res = await fetch(url, {
+  const res = await withTimeout(fetch(url, {
     method:'HEAD',
     cache:'no-store',
     headers:{
@@ -15,7 +27,7 @@ async function countOccupiedCapsules(){
       'Cache-Control':'no-cache, no-store, max-age=0',
       Pragma:'no-cache'
     }
-  });
+  }), SUPABASE_TIMEOUT_MS, 'supabase_count_timeout');
 
   if(!res.ok){
     const text = await res.text().catch(()=>String(res.status));
@@ -30,18 +42,24 @@ async function countOccupiedCapsules(){
 const handler = async (event) => {
   const pf = preflight(event); if(pf) return pf;
 
-  try{
-    const sector = Math.max(1, Number(event.queryStringParameters?.sector || 1));
-    const size = 500;
-    const start = (sector - 1) * size + 1;
-    const end = Math.min(sector * size, 20007);
+  const sector = Math.max(1, Number(event.queryStringParameters?.sector || 1));
+  const size = 500;
+  const start = (sector - 1) * size + 1;
+  const end = Math.min(sector * size, TOTAL_CELLS);
 
-    const rows = await sb(
+  try{
+    const rows = await withTimeout(sb(
       `/capsules?cell_number=gte.${start}&cell_number=lte.${end}&or=(status.eq.published,status.eq.paid_pending_moderation,status.eq.hidden)&select=cell_number,nickname,memory_year,message,status,updated_at,is_seed,source&order=cell_number.asc`,
       {method:'GET'}
-    );
+    ), SUPABASE_TIMEOUT_MS, 'supabase_cells_timeout');
 
-    const occupiedTotal = await countOccupiedCapsules();
+    let occupiedTotal = START_OCCUPIED_FALLBACK;
+    try{
+      occupiedTotal = await countOccupiedCapsules();
+    }catch(countErr){
+      console.warn('Supabase count skipped:', countErr.message);
+      occupiedTotal = Array.isArray(rows) && rows.length ? Math.max(START_OCCUPIED_FALLBACK, rows.length) : START_OCCUPIED_FALLBACK;
+    }
 
     const cells = (rows || []).map((row)=>{
       if(row.status === 'published') return row;
@@ -60,12 +78,23 @@ const handler = async (event) => {
       start,
       end,
       occupied_total: occupiedTotal,
-      free_total: 20007 - occupiedTotal,
+      free_total: TOTAL_CELLS - occupiedTotal,
       sector_occupied: cells.length,
       cells
     });
   }catch(e){
-    return fail(e, 500);
+    console.warn('list-cells fallback:', e.message);
+    return ok({
+      sector,
+      start,
+      end,
+      occupied_total: START_OCCUPIED_FALLBACK,
+      free_total: TOTAL_CELLS - START_OCCUPIED_FALLBACK,
+      sector_occupied: 0,
+      cells:[],
+      fallback:true,
+      reason:String(e.message || e)
+    });
   }
 };
 
