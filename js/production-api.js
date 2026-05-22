@@ -13,6 +13,7 @@
   try { localStorage.removeItem('capsule2007_owned_cells'); } catch(e) {}
 
   const API_ORIGIN = 'https://capsule2007.vercel.app';
+  const API_TIMEOUT_MS = 2800;
 
   const API = {
     createPayment: API_ORIGIN + '/api/create-payment',
@@ -171,26 +172,33 @@
       const selectedRemote = state.remoteCells.get(selectedCell);
       const selectedStatus = String(selectedRemote?.status || '');
       if(selectedRemote && selectedStatus !== 'rejected'){
-      window.selectedArchiveCell = null;
-      const selectedNode = document.querySelector('#cellGrid .cell.selected');
-      if(selectedNode) selectedNode.classList.remove('selected');
+        window.selectedArchiveCell = null;
+        const selectedNode = document.querySelector('#cellGrid .cell.selected');
+        if(selectedNode) selectedNode.classList.remove('selected');
 
-      const submit = document.getElementById('reserveSubmitBtn');
-      if(submit){
-        submit.disabled = true;
-        submit.textContent = 'Сначала выбери ячейку';
-      }
+        const submit = document.getElementById('reserveSubmitBtn');
+        if(submit){
+          submit.disabled = true;
+          submit.textContent = 'Сначала выбери ячейку';
+        }
 
-      if(typeof window.clearArchiveSelection === 'function'){
-        window.clearArchiveSelection();
-      }else if(typeof window.updateReserveState === 'function'){
-        window.updateReserveState();
-      }
+        if(typeof window.clearArchiveSelection === 'function'){
+          window.clearArchiveSelection();
+        }else if(typeof window.updateReserveState === 'function'){
+          window.updateReserveState();
+        }
       }
     }
   }
 
-
+  function renderArchiveOnceThenApplyRemote(){
+    if(typeof window.renderArchiveGridActive === 'function'){
+      window.renderArchiveGridActive();
+    }else if(typeof renderArchiveCells === 'function'){
+      renderArchiveCells();
+    }
+    applyRemoteCellsToDom();
+  }
 
   function applyReserveStatusForTakenCell(cellNumber, status){
     const notice = document.getElementById('reserveNotice');
@@ -245,23 +253,37 @@
       applyReserveStatusForTakenCell(selectedCell, status);
     };
   }
+
   async function apiFetch(url, options = {}){
-    const res = await fetch(url, {
-      ...options,
-      cache:'no-store',
-      headers:{
-        'Content-Type':'application/json',
-        'Cache-Control':'no-cache, no-store, max-age=0',
-        'Pragma':'no-cache',
-        ...(options.headers || {})
+    const controller = new AbortController();
+    const timeoutId = setTimeout(()=>controller.abort(), Number(options.timeoutMs || API_TIMEOUT_MS));
+
+    try{
+      const res = await fetch(url, {
+        ...options,
+        cache:'no-store',
+        signal:controller.signal,
+        headers:{
+          'Content-Type':'application/json',
+          'Cache-Control':'no-cache, no-store, max-age=0',
+          'Pragma':'no-cache',
+          ...(options.headers || {})
+        }
+      });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok || data.error){
+        const msg = data.error || ('HTTP '+res.status);
+        throw new Error(msg);
       }
-    });
-    const data = await res.json().catch(()=>({}));
-    if(!res.ok || data.error){
-      const msg = data.error || ('HTTP '+res.status);
-      throw new Error(msg);
+      return data;
+    }catch(err){
+      if(err && err.name === 'AbortError'){
+        throw new Error('backend_timeout');
+      }
+      throw err;
+    }finally{
+      clearTimeout(timeoutId);
     }
-    return data;
   }
 
   // Подгрузка реальных занятых ячеек сектора из базы.
@@ -298,20 +320,12 @@
       };
 
       window.__capsuleRemoteStats = state.remoteStats;
-      window.__capsuleRemoteTaken = new Set(
-        cells
-          .map(cellNumberOf)
-          .filter(Boolean)
-      );
+      window.__capsuleRemoteTaken = new Set(cells.map(cellNumberOf).filter(Boolean));
 
       state.lastSectorLoaded = sector;
       emit('sector_loaded', {sector, count:state.remoteCells.size});
 
-      if(typeof renderArchiveCells === 'function') renderArchiveCells();
-      applyRemoteCellsToDom();
-
-      if(typeof window.renderArchiveGridActive === 'function') window.renderArchiveGridActive();
-      applyRemoteCellsToDom();
+      renderArchiveOnceThenApplyRemote();
     }catch(e){
       console.warn('Backend sector load skipped:', e.message);
       // На демо/локально сайт продолжает жить на визуальном фейковом заполнении.
@@ -412,6 +426,7 @@
       try{
         const data = await apiFetch(API.createPayment, {
           method:'POST',
+          timeoutMs:8000,
           body:JSON.stringify({
             cell_number:cellNumber,
             nickname,
@@ -447,8 +462,8 @@
 
       }catch(err){
         const raw = String(err.message || err);
-        const friendly = (raw.includes('Missing env') || raw.includes('backend_offline') || raw.includes('HTTP 404') || raw.includes('SUPABASE'))
-          ? 'Платёжная система пока не подключена. Это тестовый режим: ячейка не занята и не опубликована.'
+        const friendly = (raw.includes('Missing env') || raw.includes('backend_offline') || raw.includes('HTTP 404') || raw.includes('SUPABASE') || raw.includes('backend_timeout'))
+          ? 'Платёжная система пока не подключена или отвечает медленно. Это тестовый режим: ячейка не занята и не опубликована.'
           : ('Ошибка: ' + raw);
         if(notice) notice.textContent = friendly;
         if(preview){
@@ -489,6 +504,7 @@
       try{
         const data = await apiFetch(API.myCell, {
           method:'POST',
+          timeoutMs:6000,
           body:JSON.stringify({cell_number:n, owner_code:code})
         });
         const c = data.cell;
@@ -549,15 +565,13 @@
     handlePaymentReturn();
   });
 
-  
-
   async function handlePaymentReturn(){
     const q = new URLSearchParams(location.search);
     const reservation = q.get('payment_check') || q.get('reservation_id');
     const claim = q.get('claim') || q.get('claim_token');
     if(!reservation || !claim) return;
     try{
-      const data = await apiFetch(cacheBustedUrl(API.checkPayment + `?reservation_id=${encodeURIComponent(reservation)}&claim=${encodeURIComponent(claim)}`), {method:'GET'});
+      const data = await apiFetch(cacheBustedUrl(API.checkPayment + `?reservation_id=${encodeURIComponent(reservation)}&claim=${encodeURIComponent(claim)}`), {method:'GET', timeoutMs:6000});
       if(data.paid && data.cell){
         const c = data.cell;
         const ownerCode = getOwnerCode(data.reservation_id || data.payment_check || reservation);
