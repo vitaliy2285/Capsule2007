@@ -549,11 +549,7 @@
     handlePaymentReturn();
   });
 
-  setInterval(() => {
-    if(window.Capsule2007V5){
-      window.Capsule2007V5.loadSectorFromBackend({force:true});
-    }
-  }, 3000);
+  
 
   async function handlePaymentReturn(){
     const q = new URLSearchParams(location.search);
