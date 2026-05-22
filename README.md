@@ -20,3 +20,7 @@ curl -sS 'https://capsule2007.vercel.app/api/admin-moderate' \
 
 Capsule2007 includes official foundation capsules as starter archive fragments for atmosphere.
 They are **not** fake paid users and do not represent real purchases.
+
+## Deployment note
+
+Latest main branch redeploy trigger: production should use the current `vercel.json` without legacy `handle` entries.
