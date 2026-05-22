@@ -1,4 +1,31 @@
-const {sb, ok, fail, preflight} = require('./_supabase');
+const {sb, ok, fail, preflight, env} = require('./_supabase');
+
+async function countOccupiedCapsules(){
+  const url = env('SUPABASE_URL').replace(/\/$/,'') +
+    '/rest/v1/capsules?or=(status.eq.published,status.eq.paid_pending_moderation,status.eq.hidden)&select=cell_number';
+  const key = env('SUPABASE_SERVICE_ROLE_KEY');
+
+  const res = await fetch(url, {
+    method:'HEAD',
+    cache:'no-store',
+    headers:{
+      apikey:key,
+      Authorization:`Bearer ${key}`,
+      Prefer:'count=exact',
+      'Cache-Control':'no-cache, no-store, max-age=0',
+      Pragma:'no-cache'
+    }
+  });
+
+  if(!res.ok){
+    const text = await res.text().catch(()=>String(res.status));
+    throw new Error(text || `Supabase count HTTP ${res.status}`);
+  }
+
+  const range = res.headers.get('content-range') || '';
+  const total = Number(range.split('/').pop());
+  return Number.isFinite(total) ? total : 0;
+}
 
 const handler = async (event) => {
   const pf = preflight(event); if(pf) return pf;
@@ -14,10 +41,7 @@ const handler = async (event) => {
       {method:'GET'}
     );
 
-    const stats = await sb(
-      '/capsules?or=(status.eq.published,status.eq.paid_pending_moderation,status.eq.hidden)&select=cell_number',
-      {method:'GET'}
-    );
+    const occupiedTotal = await countOccupiedCapsules();
 
     const cells = (rows || []).map((row)=>{
       if(row.status === 'published') return row;
@@ -35,8 +59,8 @@ const handler = async (event) => {
       sector,
       start,
       end,
-      occupied_total: stats.length,
-      free_total: 20007 - stats.length,
+      occupied_total: occupiedTotal,
+      free_total: 20007 - occupiedTotal,
       sector_occupied: cells.length,
       cells
     });
