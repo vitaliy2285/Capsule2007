@@ -1,15 +1,12 @@
 /*
-  Capsule2007 V5 Production Bridge
-  --------------------------------
-  Этот файл НЕ ломает “СИЛЬНО”, а аккуратно перехватывает критичные действия:
-  1) заявка создаётся только как pending_payment;
-  2) ячейка НЕ становится занятой до webhook успешной оплаты;
-  3) фронтенд никогда не решает сам, оплачено или нет;
-  4) “Моя ячейка” проверяется через backend.
+  Capsule2007 V5 Production Bridge — startup-safe version
+  -------------------------------------------------------
+  Цель этой версии: сайт должен показываться мгновенно.
+  Backend-синхронизация НЕ запускается автоматически при открытии страницы.
+  API используется только после действий пользователя: сектор, занятая ячейка, оплата, моя ячейка.
 */
 
 (function(){
-  // Старые демо-записи localStorage не должны влиять на production-логику.
   try { localStorage.removeItem('capsule2007_owned_cells'); } catch(e) {}
 
   const API_ORIGIN = 'https://capsule2007.vercel.app';
@@ -20,28 +17,42 @@
     checkPayment: API_ORIGIN + '/api/check-payment',
     myCell: API_ORIGIN + '/api/my-cell',
     listCells: API_ORIGIN + '/api/list-cells',
-    getCell: API_ORIGIN + '/api/get-cell',
-    yookassaWebhook: API_ORIGIN + '/api/yookassa-webhook'
+    getCell: API_ORIGIN + '/api/get-cell'
   };
 
   const state = {
     remoteCells: new Map(),
     remoteStats: null,
     lastSectorLoaded: null,
-    lastPending: null,
-    syncRevision: 0
+    syncRevision: 0,
+    startupSyncDisabled: true
   };
 
-  // Полностью отключаем демо-публикацию из localStorage для production/test-стенда.
   window.capsuleSavedFor = function(){ return null; };
   window.capsuleSavedList = function(){ return []; };
 
   function emit(name, payload){
-    try {
+    try{
       window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({event:name, ...payload});
+      window.dataLayer.push({event:name, ...(payload || {})});
       console.log('[Capsule2007]', name, payload || {});
-    } catch(e){}
+    }catch(e){}
+  }
+
+  function pad(n){ return String(n).padStart(5,'0'); }
+
+  function cellNumberOf(raw){
+    const n = Number(raw && (raw.cell_number ?? raw.cell ?? raw.number));
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function remoteOwnerName(raw){
+    return String((raw && (raw.nickname || raw.owner_nickname)) || 'Аноним').trim() || 'Аноним';
+  }
+
+  function cacheBustedUrl(url){
+    const sep = url.includes('?') ? '&' : '?';
+    return `${url}${sep}_sync=${Date.now()}_${Math.random().toString(36).slice(2)}`;
   }
 
   function getSelectedCellNumber(){
@@ -54,22 +65,6 @@
     const txt = (document.getElementById('reserveCellInput')?.value || '').replace(/\D/g,'');
     if(txt) return Number(txt);
     return 0;
-  }
-
-  function pad(n){ return String(n).padStart(5,'0'); }
-
-  function cellNumberOf(raw){
-    const n = Number(raw?.cell_number ?? raw?.cell ?? raw?.number);
-    return Number.isFinite(n) ? n : 0;
-  }
-
-  function remoteOwnerName(raw){
-    return String(raw?.nickname || raw?.owner_nickname || 'Аноним').trim() || 'Аноним';
-  }
-
-  function cacheBustedUrl(url){
-    const sep = url.includes('?') ? '&' : '?';
-    return `${url}${sep}_sync=${Date.now()}_${Math.random().toString(36).slice(2)}`;
   }
 
   function ownerCodeStorageKey(reservationId){
@@ -86,12 +81,36 @@
   function getOwnerCode(reservationId){
     if(!reservationId) return '';
     const key = ownerCodeStorageKey(reservationId);
-    let code = '';
-    try { code = sessionStorage.getItem(key) || ''; } catch(e) {}
-    if(!code){
-      try { code = localStorage.getItem(key) || ''; } catch(e) {}
+    try { return sessionStorage.getItem(key) || localStorage.getItem(key) || ''; } catch(e) { return ''; }
+  }
+
+  async function apiFetch(url, options = {}){
+    const controller = new AbortController();
+    const timeoutId = setTimeout(()=>controller.abort(), Number(options.timeoutMs || API_TIMEOUT_MS));
+
+    try{
+      const res = await fetch(url, {
+        ...options,
+        cache:'no-store',
+        signal:controller.signal,
+        headers:{
+          'Content-Type':'application/json',
+          'Cache-Control':'no-cache, no-store, max-age=0',
+          'Pragma':'no-cache',
+          ...(options.headers || {})
+        }
+      });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok || data.error){
+        throw new Error(data.error || ('HTTP '+res.status));
+      }
+      return data;
+    }catch(err){
+      if(err && err.name === 'AbortError') throw new Error('backend_timeout');
+      throw err;
+    }finally{
+      clearTimeout(timeoutId);
     }
-    return String(code || '');
   }
 
   function installHiddenCellVisualFix(){
@@ -107,25 +126,14 @@
         opacity:.82!important;
         text-indent:0!important;
       }
-      #cellGrid .cell.hidden-cell::before{
-        content:none!important;
-        display:none!important;
-      }
-      #cellGrid .cell.hidden-cell::after{
-        content:none!important;
-        display:none!important;
-      }
-      #cellGrid .cell.hidden-cell:hover::after{
-        content:attr(data-id)!important;
-        display:block!important;
-      }
+      #cellGrid .cell.hidden-cell::before,#cellGrid .cell.hidden-cell::after{content:none!important;display:none!important;}
+      #cellGrid .cell.hidden-cell:hover::after{content:attr(data-id)!important;display:block!important;}
     `;
     document.head.appendChild(style);
   }
 
   function applyRemoteCellsToDom(){
     installHiddenCellVisualFix();
-
     const nodes = document.querySelectorAll('#cellGrid .cell[data-cell], #cellGrid .cell[data-n]');
 
     nodes.forEach((node)=>{
@@ -166,29 +174,6 @@
         node.removeAttribute('aria-disabled');
       }
     });
-
-    const selectedCell = getSelectedCellNumber();
-    if(selectedCell){
-      const selectedRemote = state.remoteCells.get(selectedCell);
-      const selectedStatus = String(selectedRemote?.status || '');
-      if(selectedRemote && selectedStatus !== 'rejected'){
-        window.selectedArchiveCell = null;
-        const selectedNode = document.querySelector('#cellGrid .cell.selected');
-        if(selectedNode) selectedNode.classList.remove('selected');
-
-        const submit = document.getElementById('reserveSubmitBtn');
-        if(submit){
-          submit.disabled = true;
-          submit.textContent = 'Сначала выбери ячейку';
-        }
-
-        if(typeof window.clearArchiveSelection === 'function'){
-          window.clearArchiveSelection();
-        }else if(typeof window.updateReserveState === 'function'){
-          window.updateReserveState();
-        }
-      }
-    }
   }
 
   function renderArchiveOnceThenApplyRemote(){
@@ -200,93 +185,6 @@
     applyRemoteCellsToDom();
   }
 
-  function applyReserveStatusForTakenCell(cellNumber, status){
-    const notice = document.getElementById('reserveNotice');
-    const preview = document.getElementById('reservePreview');
-    const submit = document.getElementById('reserveSubmitBtn');
-
-    if(status === 'paid_pending_moderation'){
-      if(notice) notice.textContent = `Ячейка #${pad(cellNumber)} оплачена и ожидает модерации.`;
-      if(preview) preview.textContent = 'Капсула оплачена и отправлена на модерацию.\nПосле одобрения она появится в архиве.\nПовторная покупка этой ячейки невозможна.';
-      if(submit){
-        submit.disabled = true;
-        submit.textContent = 'Ожидает модерации';
-      }
-      return true;
-    }
-
-    if(status === 'hidden'){
-      if(notice) notice.textContent = 'Капсула скрыта администратором.';
-      if(preview) preview.textContent = 'Эта ячейка недоступна для повторной покупки.';
-      if(submit){
-        submit.disabled = true;
-        submit.textContent = 'Недоступно';
-      }
-      return true;
-    }
-
-    if(status === 'published'){
-      if(notice) notice.textContent = 'Капсула опубликована.';
-      if(preview) preview.textContent = 'Эта ячейка уже опубликована и недоступна для повторной покупки.';
-      if(submit){
-        submit.disabled = true;
-        submit.textContent = 'Опубликовано';
-      }
-      return true;
-    }
-
-    return false;
-  }
-
-  const oldUpdateReserveState = window.updateReserveState;
-  if(typeof oldUpdateReserveState === 'function'){
-    window.updateReserveState = function(){
-      oldUpdateReserveState();
-
-      const selectedCell = getSelectedCellNumber();
-      if(!selectedCell) return;
-
-      const remote = state.remoteCells.get(selectedCell);
-      const status = String(remote?.status || '');
-      if(!remote || status === 'rejected') return;
-
-      applyReserveStatusForTakenCell(selectedCell, status);
-    };
-  }
-
-  async function apiFetch(url, options = {}){
-    const controller = new AbortController();
-    const timeoutId = setTimeout(()=>controller.abort(), Number(options.timeoutMs || API_TIMEOUT_MS));
-
-    try{
-      const res = await fetch(url, {
-        ...options,
-        cache:'no-store',
-        signal:controller.signal,
-        headers:{
-          'Content-Type':'application/json',
-          'Cache-Control':'no-cache, no-store, max-age=0',
-          'Pragma':'no-cache',
-          ...(options.headers || {})
-        }
-      });
-      const data = await res.json().catch(()=>({}));
-      if(!res.ok || data.error){
-        const msg = data.error || ('HTTP '+res.status);
-        throw new Error(msg);
-      }
-      return data;
-    }catch(err){
-      if(err && err.name === 'AbortError'){
-        throw new Error('backend_timeout');
-      }
-      throw err;
-    }finally{
-      clearTimeout(timeoutId);
-    }
-  }
-
-  // Подгрузка реальных занятых ячеек сектора из базы.
   async function loadSectorFromBackend(options = {}){
     const force = !!options.force;
     const label = document.getElementById('sectorLabel')?.textContent || '';
@@ -299,40 +197,38 @@
 
     try{
       const data = await apiFetch(cacheBustedUrl(`${API.listCells}?sector=${sector}`), {method:'GET'});
-
       if(syncRevision !== state.syncRevision) return;
 
-      const cells = Array.isArray(data.cells)
-        ? data.cells
-        : (Array.isArray(data.data) ? data.data : []);
-
+      const cells = Array.isArray(data.cells) ? data.cells : (Array.isArray(data.data) ? data.data : []);
       state.remoteCells.clear();
 
-      for (const c of cells) {
+      for(const c of cells){
         const cellNumber = cellNumberOf(c);
-        if (!cellNumber) continue;
-        state.remoteCells.set(cellNumber, c);
+        if(cellNumber) state.remoteCells.set(cellNumber, c);
       }
 
       state.remoteStats = {
-        occupied_total: Number(data.occupied_total || 0),
-        free_total: Number(data.free_total || 0)
+        occupied_total:Number(data.occupied_total || 0),
+        free_total:Number(data.free_total || 0)
       };
-
       window.__capsuleRemoteStats = state.remoteStats;
       window.__capsuleRemoteTaken = new Set(cells.map(cellNumberOf).filter(Boolean));
-
       state.lastSectorLoaded = sector;
       emit('sector_loaded', {sector, count:state.remoteCells.size});
-
       renderArchiveOnceThenApplyRemote();
     }catch(e){
       console.warn('Backend sector load skipped:', e.message);
-      // На демо/локально сайт продолжает жить на визуальном фейковом заполнении.
     }
   }
 
-  // Переопределяем публичную запись ячейки: база важнее демо.
+  function lazySyncSector(reason){
+    window.clearTimeout(window.__capsule2007LazySyncTimer);
+    window.__capsule2007LazySyncTimer = window.setTimeout(()=>{
+      loadSectorFromBackend({force:true});
+      emit('lazy_sector_sync', {reason:reason || 'manual'});
+    }, 900);
+  }
+
   const oldCapsuleCellRecord = window.capsuleCellRecord;
   window.capsuleCellRecord = function(n){
     const remote = state.remoteCells.get(Number(n));
@@ -341,11 +237,7 @@
         cell:Number(remote.cell_number),
         nickname:remote.nickname || 'Аноним',
         year:remote.memory_year || '2007',
-        text:(remote.status === 'published')
-          ? (remote.message || '')
-          : (remote.status === 'hidden'
-            ? ''
-            : 'Капсула ожидает модерации'),
+        text:remote.status === 'published' ? (remote.message || '') : (remote.status === 'hidden' ? '' : 'Капсула ожидает модерации'),
         status:remote.status || 'published',
         local:false
       };
@@ -353,7 +245,6 @@
     return oldCapsuleCellRecord ? oldCapsuleCellRecord(n) : null;
   };
 
-  // Открытие занятой ячейки через backend, если возможно.
   const oldOpenOccupiedCell = window.openOccupiedCell;
   window.openOccupiedCell = async function(n){
     emit('cell_occupied_open', {cell_number:n});
@@ -363,11 +254,7 @@
         const c = data.cell;
         openActionModal(
           'Ячейка #'+pad(c.cell_number),
-          `Статус: ${(c.is_seed === true || c.source === 'foundation')
-            ? 'капсула основания Capsule2007'
-            : (c.status === 'published'
-              ? 'опубликована'
-              : (c.status === 'hidden' ? 'скрыта' : 'ожидает модерации'))}\n`+
+          `Статус: ${(c.is_seed === true || c.source === 'foundation') ? 'капсула основания Capsule2007' : (c.status === 'published' ? 'опубликована' : (c.status === 'hidden' ? 'скрыта' : 'ожидает модерации'))}\n`+
           `Владелец: ${c.nickname || 'Аноним'}\n`+
           `${c.status === 'published' ? `Год: ${c.memory_year || '2007'}\n\n“${c.message || ''}”\n\nПостоянный адрес капсулы:\n${location.origin}/cell/${pad(c.cell_number)}` : ''}`+
           `${c.status === 'paid_pending_moderation' ? 'Капсула ожидает модерации.' : ''}`+
@@ -379,108 +266,103 @@
     if(oldOpenOccupiedCell) oldOpenOccupiedCell(n);
   };
 
-  // КРИТИЧНО: перехватываем submit формы в capture-фазе, чтобы старый demo-localStorage не успел записать ячейку как занятую.
+  function applyReserveStatusForTakenCell(cellNumber, status){
+    const notice = document.getElementById('reserveNotice');
+    const preview = document.getElementById('reservePreview');
+    const submit = document.getElementById('reserveSubmitBtn');
+
+    if(status === 'paid_pending_moderation'){
+      if(notice) notice.textContent = `Ячейка #${pad(cellNumber)} оплачена и ожидает модерации.`;
+      if(preview) preview.textContent = 'Капсула оплачена и отправлена на модерацию.\nПосле одобрения она появится в архиве.\nПовторная покупка этой ячейки невозможна.';
+      if(submit){ submit.disabled = true; submit.textContent = 'Ожидает модерации'; }
+      return true;
+    }
+    if(status === 'hidden'){
+      if(notice) notice.textContent = 'Капсула скрыта администратором.';
+      if(preview) preview.textContent = 'Эта ячейка недоступна для повторной покупки.';
+      if(submit){ submit.disabled = true; submit.textContent = 'Недоступно'; }
+      return true;
+    }
+    if(status === 'published'){
+      if(notice) notice.textContent = 'Капсула опубликована.';
+      if(preview) preview.textContent = 'Эта ячейка уже опубликована и недоступна для повторной покупки.';
+      if(submit){ submit.disabled = true; submit.textContent = 'Опубликовано'; }
+      return true;
+    }
+    return false;
+  }
+
   document.addEventListener('submit', async function(e){
-    if(e.target && e.target.id === 'reserveForm'){
-      e.preventDefault();
-      e.stopImmediatePropagation();
+    if(!(e.target && e.target.id === 'reserveForm')) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
 
-      const cellNumber = getSelectedCellNumber();
-      const nickname = (document.getElementById('reserveName')?.value || 'Аноним').trim() || 'Аноним';
-      const year = document.getElementById('reserveYear')?.value || '2007';
-      const message = (document.getElementById('reserveMemory')?.value || '').trim();
-      const notice = document.getElementById('reserveNotice');
-      const preview = document.getElementById('reservePreview');
-      const submit = document.getElementById('reserveSubmitBtn');
+    const cellNumber = getSelectedCellNumber();
+    const nickname = (document.getElementById('reserveName')?.value || 'Аноним').trim() || 'Аноним';
+    const year = document.getElementById('reserveYear')?.value || '2007';
+    const message = (document.getElementById('reserveMemory')?.value || '').trim();
+    const notice = document.getElementById('reserveNotice');
+    const preview = document.getElementById('reservePreview');
+    const submit = document.getElementById('reserveSubmitBtn');
 
-      if(!cellNumber){
-        if(notice) notice.textContent = 'Сначала выбери свободную ячейку в архиве.';
-        document.getElementById('archive')?.scrollIntoView({behavior:'smooth', block:'center'});
-        return;
+    if(!cellNumber){
+      if(notice) notice.textContent = 'Сначала выбери свободную ячейку в архиве.';
+      document.getElementById('archive')?.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+
+    const selectedRemote = state.remoteCells.get(cellNumber);
+    const selectedStatus = String(selectedRemote?.status || '');
+    if(selectedRemote && selectedStatus !== 'rejected'){
+      applyReserveStatusForTakenCell(cellNumber, selectedStatus);
+      applyRemoteCellsToDom();
+      return;
+    }
+
+    if(message.length < 8){
+      if(notice) notice.textContent = 'Сначала напиши хотя бы короткую капсулу. До 160 символов.';
+      document.getElementById('reserveMemory')?.focus();
+      return;
+    }
+    if(message.length > 160){
+      if(notice) notice.textContent = 'Капсула должна быть до 160 символов.';
+      return;
+    }
+
+    emit('payment_click', {cell_number:cellNumber, chars:message.length});
+    if(submit){ submit.disabled = true; submit.textContent = 'Создаём заявку на оплату...'; }
+    if(notice) notice.textContent = 'Ячейка ещё не занята. Создаём заявку pending_payment.';
+
+    try{
+      const data = await apiFetch(API.createPayment, {
+        method:'POST',
+        timeoutMs:8000,
+        body:JSON.stringify({cell_number:cellNumber, nickname, memory_year:year, message})
+      });
+
+      saveOwnerCode(data.reservation_id || data.payment_check, data.owner_code);
+      if(preview){
+        preview.textContent = `Ячейка #${pad(cellNumber)} подготовлена.\nСтатус: pending_payment\nДо оплаты она НЕ отображается как занятая.\n\nПосле успешной оплаты появятся:\n— код владельца;\n— постоянный адрес капсулы;\n— статус модерации.`;
       }
-      const selectedRemote = state.remoteCells.get(cellNumber);
-      const selectedStatus = String(selectedRemote?.status || '');
-      if(selectedRemote && selectedStatus !== 'rejected'){
-        applyReserveStatusForTakenCell(cellNumber, selectedStatus);
-        applyRemoteCellsToDom();
-        return;
+      if(data.payment_url){
+        if(notice) notice.textContent = 'Переход к оплате 107 ₽. После оплаты ячейка уйдёт на модерацию.';
+        if(submit) submit.textContent = 'Переходим к оплате...';
+        setTimeout(()=>{ location.href = data.payment_url; }, 650);
+      }else{
+        if(notice) notice.textContent = 'Заявка создана, но платёжка не настроена. Ячейка НЕ занята.';
+        if(submit){ submit.disabled = false; submit.textContent = 'Платёжка не настроена · демо'; }
       }
-      if(message.length < 8){
-        if(notice) notice.textContent = 'Сначала напиши хотя бы короткую капсулу. До 160 символов.';
-        document.getElementById('reserveMemory')?.focus();
-        return;
-      }
-      if(message.length > 160){
-        if(notice) notice.textContent = 'Капсула должна быть до 160 символов.';
-        return;
-      }
-
-      emit('payment_click', {cell_number:cellNumber, chars:message.length});
-
-      if(submit){
-        submit.disabled = true;
-        submit.textContent = 'Создаём заявку на оплату...';
-      }
-      if(notice) notice.textContent = 'Ячейка ещё не занята. Создаём заявку pending_payment.';
-
-      try{
-        const data = await apiFetch(API.createPayment, {
-          method:'POST',
-          timeoutMs:8000,
-          body:JSON.stringify({
-            cell_number:cellNumber,
-            nickname,
-            memory_year:year,
-            message
-          })
-        });
-
-        state.lastPending = data;
-        saveOwnerCode(data.reservation_id || data.payment_check, data.owner_code);
-
-        if(preview){
-          preview.textContent =
-            `Ячейка #${pad(cellNumber)} подготовлена.\n`+
-            `Статус: pending_payment\n`+
-            `До оплаты она НЕ отображается как занятая.\n\n`+
-            `После успешной оплаты появятся:\n`+
-            `— код владельца;\n— постоянный адрес капсулы;\n— статус модерации.`;
-        }
-
-        if(data.payment_url){
-          if(notice) notice.textContent = 'Переход к оплате 107 ₽. После оплаты ячейка уйдёт на модерацию.';
-          if(submit) submit.textContent = 'Переходим к оплате...';
-          setTimeout(()=>{ location.href = data.payment_url; }, 650);
-        }else{
-          // Без ключей платёжки — безопасный демо-режим. Ничего не публикуем.
-          if(notice) notice.textContent = 'Заявка создана, но платёжка не настроена. Ячейка НЕ занята.';
-          if(submit){
-            submit.disabled = false;
-            submit.textContent = 'Платёжка не настроена · демо';
-          }
-        }
-
-      }catch(err){
-        const raw = String(err.message || err);
-        const friendly = (raw.includes('Missing env') || raw.includes('backend_offline') || raw.includes('HTTP 404') || raw.includes('SUPABASE') || raw.includes('backend_timeout'))
-          ? 'Платёжная система пока не подключена или отвечает медленно. Это тестовый режим: ячейка не занята и не опубликована.'
-          : ('Ошибка: ' + raw);
-        if(notice) notice.textContent = friendly;
-        if(preview){
-          preview.textContent =
-            `Ячейка #${pad(cellNumber)} подготовлена как черновик.\n`+
-            `Но без backend/webhook она НЕ может стать занятой.\n\n`+
-            `Для релиза подключаем Supabase + ЮKassa.`;
-        }
-        if(submit){
-          submit.disabled = false;
-          submit.textContent = 'Оплата пока не подключена';
-        }
-      }
+    }catch(err){
+      const raw = String(err.message || err);
+      const friendly = (raw.includes('Missing env') || raw.includes('backend_offline') || raw.includes('HTTP 404') || raw.includes('SUPABASE') || raw.includes('backend_timeout'))
+        ? 'Платёжная система пока не подключена или отвечает медленно. Это тестовый режим: ячейка не занята и не опубликована.'
+        : ('Ошибка: ' + raw);
+      if(notice) notice.textContent = friendly;
+      if(preview) preview.textContent = `Ячейка #${pad(cellNumber)} подготовлена как черновик.\nНо без backend/webhook она НЕ может стать занятой.\n\nДля релиза подключаем Supabase + ЮKassa.`;
+      if(submit){ submit.disabled = false; submit.textContent = 'Оплата пока не подключена'; }
     }
   }, true);
 
-  // “Моя ячейка” — через backend. Если backend не настроен, старый демо-ответ останется fallback.
   document.addEventListener('click', async function(e){
     if(e.target && e.target.id === 'myCellOpenBtn'){
       e.preventDefault();
@@ -490,34 +372,15 @@
       const code = (document.getElementById('myCellCode')?.value || '').trim().toUpperCase();
       const out = document.getElementById('myCellResult');
 
-      if(!n || n < 1 || n > 20007){
-        if(out) out.textContent='Нужен номер ячейки от 00001 до 20007.';
-        return;
-      }
-      if(!code){
-        if(out) out.textContent='Введи код владельца.';
-        return;
-      }
+      if(!n || n < 1 || n > 20007){ if(out) out.textContent='Нужен номер ячейки от 00001 до 20007.'; return; }
+      if(!code){ if(out) out.textContent='Введи код владельца.'; return; }
 
       emit('my_cell_open', {cell_number:n});
-
       try{
-        const data = await apiFetch(API.myCell, {
-          method:'POST',
-          timeoutMs:6000,
-          body:JSON.stringify({cell_number:n, owner_code:code})
-        });
+        const data = await apiFetch(API.myCell, {method:'POST', timeoutMs:6000, body:JSON.stringify({cell_number:n, owner_code:code})});
         const c = data.cell;
         if(out){
-          out.textContent =
-            `Доступ подтверждён.\n\n`+
-            `Ячейка: #${pad(c.cell_number)}\n`+
-            `Статус: ${c.status}\n`+
-            `Владелец: ${c.nickname || 'Аноним'}\n`+
-            `Год: ${c.memory_year || '2007'}\n\n`+
-            `“${c.message || ''}”\n\n`+
-            `Постоянный адрес:\n${location.origin}/cell/${pad(c.cell_number)}\n\n`+
-            `Редактирование доступно только до публикации / в пределах окна модерации.`;
+          out.textContent = `Доступ подтверждён.\n\nЯчейка: #${pad(c.cell_number)}\nСтатус: ${c.status}\nВладелец: ${c.nickname || 'Аноним'}\nГод: ${c.memory_year || '2007'}\n\n“${c.message || ''}”\n\nПостоянный адрес:\n${location.origin}/cell/${pad(c.cell_number)}\n\nРедактирование доступно только до публикации / в пределах окна модерации.`;
         }
       }catch(err){
         if(out) out.textContent = 'Ошибка доступа: '+err.message;
@@ -525,11 +388,16 @@
     }
   }, true);
 
-  // Занятые backend-ячейки открываются только на просмотр и не выбираются повторно.
+  document.addEventListener('click', function(e){
+    if(e.target && (e.target.id === 'prevSector' || e.target.id === 'nextSector')){
+      state.lastSectorLoaded = null;
+      lazySyncSector('sector_button');
+    }
+  }, true);
+
   document.addEventListener('click', function(e){
     const cell = e.target && e.target.closest ? e.target.closest('#cellGrid .cell[data-cell], #cellGrid .cell[data-n]') : null;
     if(!cell) return;
-
     const n = Number(cell.dataset.cell || cell.dataset.n || 0);
     if(!n) return;
 
@@ -540,29 +408,16 @@
       e.stopImmediatePropagation();
       cell.classList.remove('selected');
       window.selectedArchiveCell = null;
-      if(typeof window.clearArchiveSelection === 'function'){
-        window.clearArchiveSelection();
-      }else if(typeof window.updateReserveState === 'function'){
-        window.updateReserveState();
-      }
+      if(typeof window.clearArchiveSelection === 'function') window.clearArchiveSelection();
+      else if(typeof window.updateReserveState === 'function') window.updateReserveState();
       window.openOccupiedCell(n);
-    }
-  }, true);
-
-  // После переключения сектора пробуем подтянуть backend в capture-фазе,
-  // потому что активная сетка в app.js перехватывает кнопки через stopImmediatePropagation().
-  document.addEventListener('click', function(e){
-    if(e.target && (e.target.id === 'prevSector' || e.target.id === 'nextSector')){
-      state.lastSectorLoaded = null;
-      setTimeout(()=>loadSectorFromBackend({force:true}), 250);
-      setTimeout(applyRemoteCellsToDom, 500);
     }
   }, true);
 
   window.addEventListener('load', ()=>{
     installHiddenCellVisualFix();
-    setTimeout(()=>loadSectorFromBackend({force:true}), 600);
     handlePaymentReturn();
+    emit('startup_api_sync_disabled', {enabled:true});
   });
 
   async function handlePaymentReturn(){
@@ -575,13 +430,11 @@
       if(data.paid && data.cell){
         const c = data.cell;
         const ownerCode = getOwnerCode(data.reservation_id || data.payment_check || reservation);
-        const ownerCodeText = ownerCode
-          ? `Код владельца: ${ownerCode}\n`
-          : `Код владельца был показан при создании заявки. Если вы его потеряли, восстановление пока невозможно.\n`;
+        const ownerCodeText = ownerCode ? `Код владельца: ${ownerCode}\n` : `Код владельца был показан при создании заявки. Если вы его потеряли, восстановление пока невозможно.\n`;
         openActionModal('Капсула оплачена и ожидает модерации', `Ячейка: #${pad(c.cell_number)}\n${ownerCodeText}Статус: ${c.status}\nПостоянный адрес: ${location.origin}${c.link}\n\nСохрани код владельца.`);
       }
     }catch(e){ console.warn('payment check failed', e.message); }
   }
 
-  window.Capsule2007V5 = { loadSectorFromBackend, state, applyRemoteCellsToDom };
+  window.Capsule2007V5 = { loadSectorFromBackend, state, applyRemoteCellsToDom, lazySyncSector };
 })();
