@@ -1,139 +1,144 @@
-const {sb, ok, fail, preflight} = require('./_supabase');
+const { sb, ok, fail, preflight } = require('./_supabase');
 
-const EXPECTED_AMOUNT = '107.00';
 const EXPECTED_CURRENCY = 'RUB';
 
-async function fetchYkPayment(paymentId){
+async function fetchYooKassaPayment(paymentId) {
   const shopId = process.env.YOOKASSA_SHOP_ID;
   const secret = process.env.YOOKASSA_SECRET_KEY;
 
-  if(!shopId || !secret) return null;
+  if (!shopId || !secret || !paymentId) return null;
 
-  const res = await fetch(`https://api.yookassa.ru/v3/payments/${encodeURIComponent(paymentId)}`, {
-    headers:{
-      'Authorization':'Basic ' + Buffer.from(`${shopId}:${secret}`).toString('base64')
+  const response = await fetch(`https://api.yookassa.ru/v3/payments/${encodeURIComponent(paymentId)}`, {
+    method: 'GET',
+    headers: {
+      Authorization: 'Basic ' + Buffer.from(`${shopId}:${secret}`).toString('base64')
     }
   });
 
-  const data = await res.json().catch(()=>({}));
-
-  if(!res.ok){
-    throw new Error('YooKassa verification failed');
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.description || data.message || `YooKassa HTTP ${response.status}`);
   }
-
   return data;
 }
 
-async function loadCapsule(reservationId){
-  const rows = await sb(`/capsules?id=eq.${reservationId}&select=id,cell_number,status,payment_id&limit=1`, {
-    method:'GET'
-  });
-
-  return rows[0] || null;
+function isExpired(expiresAt) {
+  if (!expiresAt) return false;
+  const ts = new Date(expiresAt).getTime();
+  return Number.isFinite(ts) && ts < Date.now();
 }
 
 const handler = async (event) => {
-  const pf = preflight(event);
-  if(pf) return pf;
+  const pf = preflight(event); if (pf) return pf;
 
-  try{
-    if(event.httpMethod !== 'POST'){
-      return fail('POST required', 405);
+  if (event.httpMethod !== 'POST') return fail('POST required', 405);
+
+  try {
+    const data = JSON.parse(event.body || '{}');
+    const object = data.object || {};
+    const paymentId = object.id;
+    const status = object.status;
+    const reservationId = object.metadata?.reservation_id;
+
+    console.log('[Webhook] received', { paymentId, reservationId, status });
+
+    if (!paymentId || !reservationId) {
+      return ok({ status: 'ignored', reason: 'missing payment_id or reservation_id' });
     }
 
-    const body = JSON.parse(event.body || '{}');
-
-    if(body.event !== 'payment.succeeded'){
-      return ok({ignored:true, event:body.event || null});
+    let verified = object;
+    try {
+      const remotePayment = await fetchYooKassaPayment(paymentId);
+      if (remotePayment) verified = remotePayment;
+    } catch (verifyErr) {
+      console.error('[Webhook] YooKassa verification failed', { paymentId, error: verifyErr.message });
+      return ok({ status: 'ignored', reason: 'payment verification failed' });
     }
 
-    const paymentId = body.object?.id;
-
-    if(!paymentId){
-      return fail('Missing payment id', 400);
+    if (verified.status !== 'succeeded' || verified.paid !== true) {
+      console.log('[Webhook] non-succeeded payment ignored', { paymentId, status: verified.status, paid: verified.paid });
+      return ok({ status: 'ignored', reason: 'payment not succeeded' });
     }
 
-    const verified = await fetchYkPayment(paymentId);
+    const rows = await sb(`/capsules?id=eq.${reservationId}&select=id,cell_number,status,expires_at,amount_rub,payment_id`);
+    const rec = Array.isArray(rows) && rows.length ? rows[0] : null;
 
-    if(!verified){
-      return fail('YooKassa credentials are required', 403);
+    if (!rec) {
+      console.warn('[Webhook] reservation not found', { reservationId, paymentId });
+      return ok({ status: 'ignored', reason: 'reservation not found' });
     }
 
-    const reservationId = verified.metadata?.reservation_id;
-
-    const valid = (
-      verified.status === 'succeeded' &&
-      verified.paid === true &&
-      verified.amount?.value === EXPECTED_AMOUNT &&
-      verified.amount?.currency === EXPECTED_CURRENCY &&
-      reservationId
-    );
-
-    if(!valid){
-      return fail('Payment verification failed', 403);
+    if (rec.status !== 'pending_payment') {
+      console.log('[Webhook] duplicate/already processed', { reservationId, paymentId, currentStatus: rec.status });
+      return ok({ status: 'idempotent', current_status: rec.status });
     }
 
-    const capsule = await loadCapsule(reservationId);
+    const expectedAmount = Number(rec.amount_rub || 107).toFixed(2);
+    const paymentAmount = verified.amount?.value;
+    const paymentCurrency = verified.amount?.currency;
 
-    if(!capsule){
-      return fail('Capsule reservation not found', 404);
+    if (paymentAmount !== expectedAmount || paymentCurrency !== EXPECTED_CURRENCY) {
+      console.warn('[Webhook] amount/currency mismatch', {
+        reservationId,
+        paymentId,
+        paymentAmount,
+        expectedAmount,
+        paymentCurrency
+      });
+      return ok({ status: 'ignored', reason: 'invalid amount or currency' });
     }
 
-    if(capsule.payment_id && capsule.payment_id !== paymentId){
-      return fail('Payment mismatch for reservation', 409);
+    if (isExpired(rec.expires_at)) {
+      console.warn('[Webhook] paid after expiration', { reservationId, paymentId, cell: rec.cell_number });
+      await sb(`/capsules?id=eq.${reservationId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          status: 'paid_expired_manual_review',
+          paid_at: new Date().toISOString(),
+          payment_id: paymentId
+        })
+      });
+      return ok({ status: 'manual_review', reason: 'reservation expired before payment' });
     }
 
-    if(['paid_pending_moderation', 'published', 'hidden'].includes(capsule.status)){
-      return ok({ok:true, idempotent:true, status:capsule.status});
-    }
-
-    if(capsule.status !== 'pending_payment'){
-      return fail(`Invalid capsule status: ${capsule.status}`, 409);
-    }
-
-    const now = new Date().toISOString();
-
-    const rows = await sb(`/capsules?id=eq.${reservationId}&status=eq.pending_payment`, {
-      method:'PATCH',
-      body:JSON.stringify({
-        status:'paid_pending_moderation',
-        payment_id:paymentId,
-        paid_at:now,
-        expires_at:null
+    await sb(`/capsules?id=eq.${reservationId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        status: 'paid_pending_moderation',
+        paid_at: new Date().toISOString(),
+        expires_at: null,
+        payment_id: paymentId
       })
     });
 
-    if(!rows.length){
-      return ok({ok:true, idempotent:true});
+    try {
+      await sb('/moderation_queue', {
+        method: 'POST',
+        body: JSON.stringify({ capsule_id: reservationId, status: 'pending' }),
+        headers: { Prefer: 'resolution=merge-duplicates,return=representation' }
+      });
+    } catch (queueErr) {
+      console.warn('[Webhook] moderation queue insert warning', { reservationId, error: queueErr.message });
     }
 
-    await sb('/moderation_queue', {
-      method:'POST',
-      body:JSON.stringify([{capsule_id:reservationId, status:'pending'}]),
-      headers:{Prefer:'resolution=merge-duplicates,return=representation'}
-    }).catch(()=>null);
-
-    return ok({ok:true});
-  }catch(e){
-    return fail(e, 500);
+    console.log('[Webhook] processed', { reservationId, paymentId });
+    return ok({ status: 'processed' });
+  } catch (e) {
+    console.error('[Webhook] error', { error: e?.message || String(e) });
+    return fail(e, 400);
   }
 };
 
 module.exports = async (req, res) => {
   const event = {
-    httpMethod:req.method,
-    headers:req.headers || {},
-    queryStringParameters:req.query || {},
-    body:req.body == null ? '' : (typeof req.body === 'string' ? req.body : JSON.stringify(req.body))
+    httpMethod: req.method,
+    headers: req.headers || {},
+    queryStringParameters: req.query || {},
+    body: req.body == null ? '' : (typeof req.body === 'string' ? req.body : JSON.stringify(req.body))
   };
-
   const result = await handler(event);
-
   if (result?.headers) {
-    for (const [k,v] of Object.entries(result.headers)) {
-      res.setHeader(k,v);
-    }
+    for (const [k, v] of Object.entries(result.headers)) res.setHeader(k, v);
   }
-
   res.status(result?.statusCode || 200).send(result?.body || '');
 };
