@@ -29,12 +29,14 @@ CREATE UNIQUE INDEX IF NOT EXISTS capsule_payment_id_unique
 ON public.capsules (payment_id)
 WHERE payment_id IS NOT NULL;
 
+DROP FUNCTION IF EXISTS public.reserve_capsule(integer, text, text, text);
+
 CREATE OR REPLACE FUNCTION public.reserve_capsule(
   in_cell_number integer,
   in_nickname text,
   in_year text,
   in_message text,
-  OUT reservation_id integer,
+  OUT reservation_id uuid,
   OUT owner_code text,
   OUT claim_token text
 )
