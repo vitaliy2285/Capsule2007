@@ -95,3 +95,46 @@ body .wrap header.hero .hero-img::before{
 body .wrap header.hero .hero-time{
   z-index:5!important;
 }
+
+/* FINAL KILL — remove remaining capsule overlay */
+
+body .wrap header.hero .heroCapsuleInline,
+body .wrap header.hero .heroCapsuleArtifact,
+body .wrap header.hero [class*="heroCapsule"],
+body .wrap header.hero img[src*="capsule-hero-bg"],
+body .wrap header.hero::before,
+body .wrap header.hero::after,
+body .wrap header.hero *::before,
+body .wrap header.hero *::after{
+    display:none!important;
+    opacity:0!important;
+    visibility:hidden!important;
+    background:none!important;
+    content:none!important;
+    pointer-events:none!important;
+}
+
+/* restore right hero image */
+body .wrap header.hero .hero-img{
+    display:block!important;
+    opacity:1!important;
+    visibility:visible!important;
+    background:url('/assets/images/hero-club.jpg') center/cover no-repeat!important;
+    min-height:300px!important;
+}
+
+body .wrap header.hero .hero-img{
+  background:url('/assets/images/hero-club.jpg') center/cover no-repeat!important;
+}
+
+body .wrap header.hero .hero-img::before,
+body .wrap header.hero .hero-img::after,
+body .wrap header.hero [class*="Capsule"],
+body .wrap header.hero [class*="capsule"],
+body .wrap header.hero img[src*="capsule"]{
+  display:none!important;
+  opacity:0!important;
+  visibility:hidden!important;
+  background:none!important;
+  content:none!important;
+}
