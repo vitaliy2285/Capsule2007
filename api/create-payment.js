@@ -19,14 +19,22 @@ function addMinutes(date, minutes) {
   return new Date(date.getTime() + minutes * 60000).toISOString();
 }
 
-async function createYooKassaPayment({ reservationId, claimToken, cell, amountRub }) {
+function ensurePaymentsConfigured() {
   const shopId = process.env.YOOKASSA_SHOP_ID;
   const secret = process.env.YOOKASSA_SECRET_KEY;
   const siteUrl = process.env.SITE_URL || '';
 
   if (!shopId || !secret || !siteUrl) {
-    return { payment_url: null, payment_id: null, demo: true };
+    const error = new Error('Payments are not configured');
+    error.statusCode = 503;
+    throw error;
   }
+
+  return { shopId, secret, siteUrl };
+}
+
+async function createYooKassaPayment({ reservationId, claimToken, cell, amountRub }) {
+  const { shopId, secret, siteUrl } = ensurePaymentsConfigured();
 
   const response = await fetch('https://api.yookassa.ru/v3/payments', {
     method: 'POST',
@@ -55,8 +63,7 @@ async function createYooKassaPayment({ reservationId, claimToken, cell, amountRu
 
   return {
     payment_url: data.confirmation?.confirmation_url || null,
-    payment_id: data.id || null,
-    demo: false
+    payment_id: data.id || null
   };
 }
 
@@ -65,6 +72,10 @@ const handler = async (event) => {
 
   try {
     if (event.httpMethod !== 'POST') return fail('POST required', 405);
+
+    // Hard safety gate: never reserve a cell unless YooKassa is configured.
+    // Otherwise public users could create pending_payment rows without payment.
+    ensurePaymentsConfigured();
 
     const body = JSON.parse(event.body || '{}');
     const cell = Number(body.cell_number || 0);
@@ -105,26 +116,33 @@ const handler = async (event) => {
     const priceRub = calculateCellPrice(cell);
     const expiresAt = addMinutes(new Date(), 15);
 
-    const payment = await createYooKassaPayment({
-      reservationId: rowId,
-      claimToken,
-      cell,
-      amountRub: priceRub
+    let payment;
+    try {
+      payment = await createYooKassaPayment({
+        reservationId: rowId,
+        claimToken,
+        cell,
+        amountRub: priceRub
+      });
+    } catch (paymentErr) {
+      console.error('[CreatePayment] payment provider error; expiring reservation', {
+        reservationId: rowId,
+        cell,
+        error: paymentErr?.message || String(paymentErr)
+      });
+      await sb(`/capsules?id=eq.${rowId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'expired' })
+      });
+      throw paymentErr;
+    }
+
+    await sb(`/capsules?id=eq.${rowId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ payment_id: payment.payment_id, amount_rub: priceRub })
     });
 
-    if (payment.payment_id) {
-      await sb(`/capsules?id=eq.${rowId}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ payment_id: payment.payment_id, amount_rub: priceRub })
-      });
-      console.log('[CreatePayment] payment created', { reservationId: rowId, paymentId: payment.payment_id, cell });
-    } else {
-      await sb(`/capsules?id=eq.${rowId}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ amount_rub: priceRub })
-      });
-      console.log('[CreatePayment] demo payment mode', { reservationId: rowId, cell });
-    }
+    console.log('[CreatePayment] payment created', { reservationId: rowId, paymentId: payment.payment_id, cell });
 
     return ok({
       reservation_id: rowId,
@@ -136,11 +154,11 @@ const handler = async (event) => {
       status: 'pending_payment',
       expires_at: expiresAt,
       payment_url: payment.payment_url,
-      demo: payment.demo || false
+      demo: false
     });
   } catch (e) {
     console.error('[CreatePayment] error', { error: e?.message || String(e) });
-    return fail(e, 400);
+    return fail(e, e.statusCode || 400);
   }
 };
 
