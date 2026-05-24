@@ -1,0 +1,97 @@
+/* HARD HERO RESET — remove failed capsule experiment */
+body .wrap header.hero{
+  display:grid!important;
+  grid-template-columns:1.05fr .45fr 1.1fr!important;
+  min-height:300px!important;
+  border:1px solid var(--line)!important;
+  border-radius:6px!important;
+  overflow:hidden!important;
+  background:#020812!important;
+  background-image:none!important;
+}
+
+body .wrap header.hero::before,
+body .wrap header.hero::after,
+body .wrap header.hero *::before,
+body .wrap header.hero *::after,
+body .wrap header.hero .heroCapsuleInline,
+body .wrap header.hero .heroCapsuleArtifact,
+body .wrap header.hero img[src*="capsule-hero-bg"]{
+  display:none!important;
+  content:none!important;
+  background:none!important;
+  background-image:none!important;
+  opacity:0!important;
+  visibility:hidden!important;
+}
+
+body .wrap header.hero .hero-left{
+  display:block!important;
+  padding:28px 28px 18px!important;
+  border-right:1px solid rgba(46,115,150,.25)!important;
+  background:#020812!important;
+  background-image:none!important;
+  position:relative!important;
+  z-index:1!important;
+}
+
+body .wrap header.hero .hero-stat{
+  display:block!important;
+  padding:30px 26px!important;
+  border-right:1px solid rgba(46,115,150,.25)!important;
+  background:#020812!important;
+  background-image:none!important;
+  position:relative!important;
+  z-index:1!important;
+}
+
+body .wrap header.hero .hero-img{
+  display:block!important;
+  position:relative!important;
+  min-height:300px!important;
+  opacity:1!important;
+  visibility:visible!important;
+  background:#020812 url('/assets/images/hero-club.jpg') center/cover no-repeat!important;
+  background-image:url('/assets/images/hero-club.jpg')!important;
+  filter:contrast(1.1) saturate(.75)!important;
+  z-index:1!important;
+}
+
+body .wrap header.hero .hero-time{
+  display:block!important;
+  position:absolute!important;
+  right:22px!important;
+  bottom:20px!important;
+  opacity:1!important;
+  visibility:visible!important;
+  z-index:2!important;
+}
+
+@media(max-width:850px){
+  body .wrap header.hero{
+    grid-template-columns:1fr!important;
+  }
+}
+
+/* Controlled capsule hero art */
+body .wrap header.hero .hero-img{
+  background:
+    linear-gradient(90deg, rgba(1,7,13,.45), rgba(1,7,13,.78)),
+    url('/assets/capsule-hero-bg.webp') center center / 78% auto no-repeat,
+    url('/assets/images/hero-club.jpg') center/cover no-repeat!important;
+}
+
+body .wrap header.hero .hero-img::before{
+  display:block!important;
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  background:radial-gradient(circle at 45% 50%, rgba(93,226,255,.14), transparent 55%)!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:none!important;
+}
+
+body .wrap header.hero .hero-time{
+  z-index:5!important;
+}

@@ -9,7 +9,7 @@
 (function(){
   try { localStorage.removeItem('capsule2007_owned_cells'); } catch(e) {}
 
-  const API_ORIGIN = 'https://capsule2007.vercel.app';
+  const API_ORIGIN = '';
   const API_TIMEOUT_MS = 2800;
 
   const API = {
@@ -25,7 +25,7 @@
     remoteStats: null,
     lastSectorLoaded: null,
     syncRevision: 0,
-    startupSyncDisabled: true
+    startupSyncDisabled: false
   };
 
   window.capsuleSavedFor = function(){ return null; };
@@ -417,7 +417,7 @@
   window.addEventListener('load', ()=>{
     installHiddenCellVisualFix();
     handlePaymentReturn();
-    emit('startup_api_sync_disabled', {enabled:true});
+    emit('startup_api_sync_enabled', {enabled:true});
   });
 
   async function handlePaymentReturn(){
@@ -438,3 +438,61 @@
 
   window.Capsule2007V5 = { loadSectorFromBackend, state, applyRemoteCellsToDom, lazySyncSector };
 })();
+
+/* Capsule2007 hotfix: disable old Vercel lazy occupied-cell rendering */
+async function capsule2007ForceLoadVisibleSectorCells() {
+  try {
+    const label = document.getElementById('sectorLabel')?.textContent || '';
+    const rangeMatch = label.match(/#(\d+)\D+#(\d+)/);
+    const visibleStart = rangeMatch ? Number(rangeMatch[1]) : 1;
+    const sector = Math.max(1, Math.floor((visibleStart - 1) / 500) + 1);
+
+    const res = await fetch('/api/list-cells?sector=' + sector, { cache: 'no-store' });
+    const data = await res.json();
+
+    const cells = Array.isArray(data.cells) ? data.cells : [];
+    const takenSet = new Set(
+      cells.map(c => Number(c.cell_number ?? c.cell ?? c.number)).filter(Boolean)
+    );
+
+    window.__capsuleRemoteTaken = takenSet;
+    window.__capsuleRemoteStats = {
+      occupied_total: Number(data.occupied_total || 217),
+      free_total: Number(data.free_total || 19790),
+      total: 20007
+    };
+
+    if (typeof window.renderArchiveCells === 'function') {
+      window.renderArchiveCells();
+    } else if (typeof renderArchiveCells === 'function') {
+      renderArchiveCells();
+    }
+
+    setTimeout(() => {
+      document.querySelectorAll('#cellGrid .cell').forEach((el) => {
+        const n = Number(el.dataset.cell || el.dataset.n || el.textContent.replace(/\D/g, '') || 0);
+        if (!n) return;
+
+        if (takenSet.has(n)) {
+          el.classList.add('taken');
+          el.dataset.taken = '1';
+          el.title = 'Ячейка #' + String(n).padStart(5, '0') + ' занята';
+        }
+      });
+
+      console.log('[Capsule2007] forced visible sector cells:', {
+        sector,
+        count: takenSet.size,
+        cells: Array.from(takenSet).slice(0, 20)
+      });
+    }, 150);
+
+  } catch (e) {
+    console.warn('[Capsule2007] force sector cells failed', e);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', capsule2007ForceLoadVisibleSectorCells);
+window.addEventListener('load', capsule2007ForceLoadVisibleSectorCells);
+setTimeout(capsule2007ForceLoadVisibleSectorCells, 800);
+setTimeout(capsule2007ForceLoadVisibleSectorCells, 1800);

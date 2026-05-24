@@ -1,6 +1,6 @@
 const TOTAL_CELLS=20007;
 const SECTOR_SIZE=500;
-const START_OCCUPIED=2317;
+const START_OCCUPIED=217;
 window.CAPSULE2007_PRODUCTION = true;
 let currentSector=1;
 let selectedArchiveCell=null;
@@ -423,7 +423,7 @@ const winampTracks=[
 ];
 let winampIndex=0, winampSecond=0, winampPlaying=true;
 function winFmt(sec){sec=Math.max(0,Math.floor(sec));return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0')}
-function winampButtonClick(){try{playCellSound('select')}catch(e){}}
+function winampButtonClick(){try{playWinampClickSound()}catch(e){}}
 function renderWinamp(){
   const box=document.getElementById('winampBox'), track=winampTracks[winampIndex];
   if(!box||!track)return;

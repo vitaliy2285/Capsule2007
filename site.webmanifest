@@ -1,0 +1,11 @@
+{
+  "name": "Capsule2007 — Архив памяти",
+  "short_name": "Capsule2007",
+  "icons": [
+    {"src": "/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "/favicon.png", "sizes": "512x512", "type": "image/png"}
+  ],
+  "theme_color": "#020b14",
+  "background_color": "#020b14",
+  "display": "standalone"
+}

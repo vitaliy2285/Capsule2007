@@ -316,3 +316,233 @@
 
   window.Capsule2007V5 = {loadSectorFromBackend, state};
 })();
+/* Capsule2007 production hotfix: force first sector occupied cells render */
+window.addEventListener('load', async () => {
+  try {
+    const res = await fetch('/api/list-cells?sector=1', { cache: 'no-store' });
+    const data = await res.json();
+
+    if (data && Array.isArray(data.cells)) {
+      window.__capsuleRemoteTaken = new Set(
+        data.cells.map(c => Number(c.cell_number)).filter(Boolean)
+      );
+
+      window.__capsuleRemoteStats = {
+        occupied_total: Number(data.occupied_total || 217),
+        free_total: Number(data.free_total || 19790),
+        total: 20007
+      };
+
+      if (typeof window.renderArchiveGrid === 'function') window.renderArchiveGrid();
+      if (typeof window.renderGrid === 'function') window.renderGrid();
+      if (typeof window.renderCells === 'function') window.renderCells();
+      if (typeof window.updateStats === 'function') window.updateStats();
+
+      window.dispatchEvent(new CustomEvent('capsule2007:remote-cells-loaded', { detail: data }));
+    }
+  } catch (e) {
+    console.warn('[Capsule2007] remote cells hotfix failed', e);
+  }
+});
+
+/* Capsule2007 hotfix: force repaint visible archive grid after remote cells load */
+window.addEventListener('capsule2007:remote-cells-loaded', () => {
+  try {
+    if (typeof window.renderArchiveGridActive === 'function') window.renderArchiveGridActive();
+    if (typeof window.renderArchiveCells === 'function') window.renderArchiveCells();
+    if (typeof window.renderArchiveGrid === 'function') window.renderArchiveGrid();
+    if (typeof window.renderGrid === 'function') window.renderGrid();
+
+    document.querySelectorAll('[data-n],[data-cell]').forEach((el) => {
+      const n = Number(el.dataset.n || el.dataset.cell || 0);
+      if (!n || !window.__capsuleRemoteTaken) return;
+
+      if (window.__capsuleRemoteTaken.has(n)) {
+        el.classList.add('taken');
+        el.dataset.taken = '1';
+      }
+    });
+  } catch (e) {
+    console.warn('[Capsule2007] grid repaint hotfix failed', e);
+  }
+});
+
+/* Capsule2007 force occupied cells render after Vercel speed lazy-load removal */
+async function capsule2007ForceRenderOccupiedCells() {
+  try {
+    const res = await fetch('/api/list-cells?sector=1', { cache: 'no-store' });
+    const data = await res.json();
+
+    const cells = Array.isArray(data.cells) ? data.cells : [];
+    const takenSet = new Set(cells.map(c => Number(c.cell_number)).filter(Boolean));
+
+    window.__capsuleRemoteTaken = takenSet;
+    window.__capsuleRemoteStats = {
+      occupied_total: Number(data.occupied_total || 217),
+      free_total: Number(data.free_total || 19790),
+      total: 20007
+    };
+
+    document.querySelectorAll('.cell, [data-n], [data-cell]').forEach((el) => {
+      const n = Number(el.dataset.n || el.dataset.cell || el.textContent.replace(/\D/g, '') || 0);
+      if (!n) return;
+
+      if (takenSet.has(n)) {
+        el.classList.add('taken');
+        el.dataset.taken = '1';
+        el.title = `Ячейка #${String(n).padStart(5, '0')} занята`;
+      }
+    });
+
+    const takenText = document.getElementById('statTaken');
+    const freeText = document.getElementById('statFree');
+    const totalText = document.getElementById('statTotal');
+    const progressText = document.getElementById('progressText');
+
+    if (takenText) takenText.textContent = String(data.occupied_total || 217);
+    if (freeText) freeText.textContent = String(data.free_total || 19790);
+    if (totalText) totalText.textContent = '20007';
+    if (progressText) progressText.textContent = `Занято ${data.occupied_total || 217} из 20007. Осталось ${data.free_total || 19790} ячеек.`;
+
+    if (typeof window.renderArchiveCells === 'function') window.renderArchiveCells();
+    if (typeof window.renderArchiveGridActive === 'function') window.renderArchiveGridActive();
+
+    setTimeout(() => {
+      document.querySelectorAll('.cell, [data-n], [data-cell]').forEach((el) => {
+        const n = Number(el.dataset.n || el.dataset.cell || el.textContent.replace(/\D/g, '') || 0);
+        if (n && takenSet.has(n)) {
+          el.classList.add('taken');
+          el.dataset.taken = '1';
+        }
+      });
+    }, 500);
+
+    console.log('[Capsule2007] occupied cells force-rendered:', takenSet.size);
+  } catch (e) {
+    console.warn('[Capsule2007] occupied cells force-render failed', e);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', capsule2007ForceRenderOccupiedCells);
+window.addEventListener('load', capsule2007ForceRenderOccupiedCells);
+setTimeout(capsule2007ForceRenderOccupiedCells, 1000);
+
+/* Capsule2007 force occupied cells render after Vercel speed lazy-load removal */
+async function capsule2007ForceRenderOccupiedCells() {
+  try {
+    const res = await fetch('/api/list-cells?sector=1', { cache: 'no-store' });
+    const data = await res.json();
+
+    const cells = Array.isArray(data.cells) ? data.cells : [];
+    const takenSet = new Set(cells.map(c => Number(c.cell_number)).filter(Boolean));
+
+    window.__capsuleRemoteTaken = takenSet;
+    window.__capsuleRemoteStats = {
+      occupied_total: Number(data.occupied_total || 217),
+      free_total: Number(data.free_total || 19790),
+      total: 20007
+    };
+
+    document.querySelectorAll('.cell, [data-n], [data-cell]').forEach((el) => {
+      const n = Number(el.dataset.n || el.dataset.cell || el.textContent.replace(/\D/g, '') || 0);
+      if (!n) return;
+
+      if (takenSet.has(n)) {
+        el.classList.add('taken');
+        el.dataset.taken = '1';
+        el.title = `Ячейка #${String(n).padStart(5, '0')} занята`;
+      }
+    });
+
+    const takenText = document.getElementById('statTaken');
+    const freeText = document.getElementById('statFree');
+    const totalText = document.getElementById('statTotal');
+    const progressText = document.getElementById('progressText');
+
+    if (takenText) takenText.textContent = String(data.occupied_total || 217);
+    if (freeText) freeText.textContent = String(data.free_total || 19790);
+    if (totalText) totalText.textContent = '20007';
+    if (progressText) progressText.textContent = `Занято ${data.occupied_total || 217} из 20007. Осталось ${data.free_total || 19790} ячеек.`;
+
+    if (typeof window.renderArchiveCells === 'function') window.renderArchiveCells();
+    if (typeof window.renderArchiveGridActive === 'function') window.renderArchiveGridActive();
+
+    setTimeout(() => {
+      document.querySelectorAll('.cell, [data-n], [data-cell]').forEach((el) => {
+        const n = Number(el.dataset.n || el.dataset.cell || el.textContent.replace(/\D/g, '') || 0);
+        if (n && takenSet.has(n)) {
+          el.classList.add('taken');
+          el.dataset.taken = '1';
+        }
+      });
+    }, 500);
+
+    console.log('[Capsule2007] occupied cells force-rendered:', takenSet.size);
+  } catch (e) {
+    console.warn('[Capsule2007] occupied cells force-render failed', e);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', capsule2007ForceRenderOccupiedCells);
+window.addEventListener('load', capsule2007ForceRenderOccupiedCells);
+setTimeout(capsule2007ForceRenderOccupiedCells, 1000);
+
+/* Capsule2007 force occupied cells render after Vercel speed lazy-load removal */
+async function capsule2007ForceRenderOccupiedCells() {
+  try {
+    const res = await fetch('/api/list-cells?sector=1', { cache: 'no-store' });
+    const data = await res.json();
+
+    const cells = Array.isArray(data.cells) ? data.cells : [];
+    const takenSet = new Set(cells.map(c => Number(c.cell_number)).filter(Boolean));
+
+    window.__capsuleRemoteTaken = takenSet;
+    window.__capsuleRemoteStats = {
+      occupied_total: Number(data.occupied_total || 217),
+      free_total: Number(data.free_total || 19790),
+      total: 20007
+    };
+
+    document.querySelectorAll('.cell, [data-n], [data-cell]').forEach((el) => {
+      const n = Number(el.dataset.n || el.dataset.cell || el.textContent.replace(/\D/g, '') || 0);
+      if (!n) return;
+
+      if (takenSet.has(n)) {
+        el.classList.add('taken');
+        el.dataset.taken = '1';
+        el.title = `Ячейка #${String(n).padStart(5, '0')} занята`;
+      }
+    });
+
+    const takenText = document.getElementById('statTaken');
+    const freeText = document.getElementById('statFree');
+    const totalText = document.getElementById('statTotal');
+    const progressText = document.getElementById('progressText');
+
+    if (takenText) takenText.textContent = String(data.occupied_total || 217);
+    if (freeText) freeText.textContent = String(data.free_total || 19790);
+    if (totalText) totalText.textContent = '20007';
+    if (progressText) progressText.textContent = `Занято ${data.occupied_total || 217} из 20007. Осталось ${data.free_total || 19790} ячеек.`;
+
+    if (typeof window.renderArchiveCells === 'function') window.renderArchiveCells();
+    if (typeof window.renderArchiveGridActive === 'function') window.renderArchiveGridActive();
+
+    setTimeout(() => {
+      document.querySelectorAll('.cell, [data-n], [data-cell]').forEach((el) => {
+        const n = Number(el.dataset.n || el.dataset.cell || el.textContent.replace(/\D/g, '') || 0);
+        if (n && takenSet.has(n)) {
+          el.classList.add('taken');
+          el.dataset.taken = '1';
+        }
+      });
+    }, 500);
+
+    console.log('[Capsule2007] occupied cells force-rendered:', takenSet.size);
+  } catch (e) {
+    console.warn('[Capsule2007] occupied cells force-render failed', e);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', capsule2007ForceRenderOccupiedCells);
+window.addEventListener('load', capsule2007ForceRenderOccupiedCells);
+setTimeout(capsule2007ForceRenderOccupiedCells, 1000);

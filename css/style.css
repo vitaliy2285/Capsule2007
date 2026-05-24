@@ -221,3 +221,67 @@ font-size: 9px;
 letter-spacing: .12em;
 color: rgba(180,255,210,.7);
 }
+
+/* EMERGENCY FINAL HERO RESTORE */
+.hero{
+  display:grid!important;
+  grid-template-columns:1.05fr .45fr 1.1fr!important;
+  min-height:300px!important;
+  overflow:hidden!important;
+  background:#020812!important;
+}
+
+.hero::before,
+.hero::after,
+.hero-left::before,
+.hero-left::after,
+.hero-img::before,
+.hero-img::after,
+.heroCapsuleInline,
+.heroCapsuleArtifact,
+img[src*="capsule-hero-bg"]{
+  display:none!important;
+  content:none!important;
+  background:none!important;
+  opacity:0!important;
+  visibility:hidden!important;
+}
+
+.hero-left{
+  padding:28px 28px 18px!important;
+  border-right:1px solid rgba(46,115,150,.25)!important;
+  position:relative!important;
+  z-index:1!important;
+  background:transparent!important;
+}
+
+.hero-stat{
+  padding:30px 26px!important;
+  border-right:1px solid rgba(46,115,150,.25)!important;
+  position:relative!important;
+  z-index:1!important;
+  background:transparent!important;
+}
+
+.hero-img{
+  position:relative!important;
+  z-index:1!important;
+  min-height:300px!important;
+  opacity:1!important;
+  filter:contrast(1.1) saturate(.75)!important;
+  background:url('../assets/images/hero-club.jpg') center/cover no-repeat!important;
+}
+
+.hero-time{
+  display:block!important;
+  position:absolute!important;
+  right:22px!important;
+  bottom:20px!important;
+  z-index:2!important;
+}
+
+@media(max-width:850px){
+  .hero{
+    grid-template-columns:1fr!important;
+  }
+}
