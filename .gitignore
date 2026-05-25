@@ -1,0 +1,8 @@
+
+# local/server only
+.env
+.env.*
+node_modules/
+package-lock.json
+*.save
+yandex_*.html
