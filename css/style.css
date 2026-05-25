@@ -237,9 +237,6 @@ color: rgba(180,255,210,.7);
 .hero-left::after,
 .hero-img::before,
 .hero-img::after,
-.heroCapsuleInline,
-.heroCapsuleArtifact,
-img[src*="capsule-hero-bg"]{
   display:none!important;
   content:none!important;
   background:none!important;

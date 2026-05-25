@@ -697,3 +697,64 @@ qTick();
 try {
   window.renderArchiveCells = renderArchiveCells;
 } catch(e) {}
+
+/* FINAL FIX: quick reserve button must always respond */
+(function(){
+  function getSelectedCellFromDom(){
+    const picked = document.querySelector('#cellGrid .cell.selected');
+    if (!picked) return 0;
+    return Number(picked.dataset.cell || picked.dataset.n || picked.textContent.replace(/\D/g,'') || 0);
+  }
+
+  function forceQuickReserveButton(){
+    const btn = document.getElementById('quickReserveBtn');
+    if (!btn) return;
+
+    btn.disabled = false;
+    btn.style.pointerEvents = 'auto';
+
+    const n = window.selectedArchiveCell || getSelectedCellFromDom();
+
+    if (n) {
+      btn.classList.add('isActive');
+      btn.textContent = 'Занять ячейку #' + String(n).padStart(5, '0');
+    } else {
+      btn.classList.remove('isActive');
+      btn.textContent = 'Сначала выбери свободную ячейку';
+    }
+  }
+
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest && e.target.closest('#quickReserveBtn');
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const picked = getSelectedCellFromDom();
+
+    if (picked && typeof openReserveOverlay === 'function') {
+      try { window.selectedArchiveCell = picked; } catch(err){}
+      openReserveOverlay();
+      return;
+    }
+
+    const archive = document.getElementById('archive');
+    archive?.classList.add('cellPickPulse');
+    setTimeout(() => archive?.classList.remove('cellPickPulse'), 1400);
+
+    const target = document.getElementById('archiveGridScrollTarget') || document.getElementById('cellGrid') || archive;
+    target?.scrollIntoView({behavior:'smooth', block:'start'});
+  }, true);
+
+  document.addEventListener('click', function(e){
+    if (e.target.closest && e.target.closest('#cellGrid .cell')) {
+      setTimeout(forceQuickReserveButton, 80);
+      setTimeout(forceQuickReserveButton, 250);
+    }
+  }, true);
+
+  document.addEventListener('DOMContentLoaded', forceQuickReserveButton);
+  window.addEventListener('load', forceQuickReserveButton);
+  setInterval(forceQuickReserveButton, 1000);
+})();
