@@ -7,10 +7,10 @@
 
 ### cURL examples
 ```bash
-curl -sS 'https://capsule2007.vercel.app/api/admin-moderate' \
+curl -sS 'https://www.capsule2007.ru/api/admin-moderate' \
   -H 'x-admin-token: YOUR_ADMIN_TOKEN'
 
-curl -sS 'https://capsule2007.vercel.app/api/admin-moderate' \
+curl -sS 'https://www.capsule2007.ru/api/admin-moderate' \
   -H 'Content-Type: application/json' \
   -H 'x-admin-token: YOUR_ADMIN_TOKEN' \
   --data '{"id":"CAPSULE_UUID","action":"publish"}'
